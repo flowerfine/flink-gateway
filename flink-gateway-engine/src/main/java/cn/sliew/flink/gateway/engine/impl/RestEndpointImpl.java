@@ -44,6 +44,7 @@ public class RestEndpointImpl implements RestEndpoint {
             .readTimeout(Duration.ofSeconds(3L))
             .writeTimeout(Duration.ofSeconds(3L))
             .callTimeout(Duration.ofSeconds(3L))
+            .addInterceptor(new LogInterceptor())
             .build();
 
     private final String webInterfaceURL;
@@ -86,6 +87,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
             return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), DashboardConfiguration.class);
         }
     }
@@ -98,6 +100,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
             return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), ClusterDataSetListResponseBody.class);
         }
     }
@@ -110,6 +113,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
             return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
         }
     }
@@ -122,6 +126,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
             return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
         }
     }
@@ -134,6 +139,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
             return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JarListInfo.class);
         }
     }
@@ -151,6 +157,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
             return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JarUploadResponseBody.class);
         }
     }
@@ -163,6 +170,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
             return response.isSuccessful();
         }
     }
@@ -176,6 +184,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
             return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobPlanInfo.class);
         }
     }
@@ -189,6 +198,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
             return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JarRunResponseBody.class);
         }
     }
@@ -201,7 +211,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonArray(response.body().string(), ClusterConfigurationInfoEntry.class);
+            return FlinkShadedJacksonUtil.parseJsonArray(response.body().string(), ClusterConfigurationInfoEntry.class);
         }
     }
 
@@ -213,7 +223,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), LogListInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), LogListInfo.class);
         }
     }
 
@@ -240,7 +250,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobIdsWithStatusOverview.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobIdsWithStatusOverview.class);
         }
     }
 
@@ -253,7 +263,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobSubmitResponseBody.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobSubmitResponseBody.class);
         }
     }
 
@@ -270,7 +280,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), MultipleJobsDetails.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), MultipleJobsDetails.class);
         }
     }
 
@@ -282,7 +292,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobDetailsInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobDetailsInfo.class);
         }
     }
 
@@ -315,7 +325,7 @@ public class RestEndpointImpl implements RestEndpoint {
             if (response.isSuccessful() == false) {
                 throw new RuntimeException(response.code() + "=" + response.message());
             }
-            return JacksonUtil.parseJsonString(response.body().string(), JobAccumulatorsInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobAccumulatorsInfo.class);
         }
     }
 
@@ -327,7 +337,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), CheckpointingStatistics.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), CheckpointingStatistics.class);
         }
     }
 
@@ -339,7 +349,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), CheckpointConfigInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), CheckpointConfigInfo.class);
         }
     }
 
@@ -351,7 +361,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), CheckpointStatistics.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), CheckpointStatistics.class);
         }
     }
 
@@ -363,7 +373,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), TaskCheckpointStatisticsWithSubtaskDetails.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TaskCheckpointStatisticsWithSubtaskDetails.class);
         }
     }
 
@@ -387,7 +397,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobExceptionsInfoWithHistory.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobExceptionsInfoWithHistory.class);
         }
     }
 
@@ -399,7 +409,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobExecutionResultResponseBody.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobExecutionResultResponseBody.class);
         }
     }
 
@@ -426,7 +436,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobPlanInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobPlanInfo.class);
         }
     }
 
@@ -440,7 +450,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
         }
     }
 
@@ -452,7 +462,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
         }
     }
 
@@ -465,7 +475,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
         }
     }
 
@@ -477,7 +487,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
         }
     }
 
@@ -490,7 +500,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
         }
     }
 
@@ -502,7 +512,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobVertexDetailsInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobVertexDetailsInfo.class);
         }
     }
 
@@ -514,7 +524,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobVertexAccumulatorsInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobVertexAccumulatorsInfo.class);
         }
     }
 
@@ -526,7 +536,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobVertexBackPressureInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobVertexBackPressureInfo.class);
         }
     }
 
@@ -541,7 +551,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobVertexFlameGraph.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobVertexFlameGraph.class);
         }
     }
 
@@ -568,7 +578,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), SubtasksAllAccumulatorsInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), SubtasksAllAccumulatorsInfo.class);
         }
     }
 
@@ -606,7 +616,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), SubtaskExecutionAttemptDetailsInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), SubtaskExecutionAttemptDetailsInfo.class);
         }
     }
 
@@ -618,7 +628,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), SubtaskExecutionAttemptDetailsInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), SubtaskExecutionAttemptDetailsInfo.class);
         }
     }
 
@@ -630,7 +640,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), SubtaskExecutionAttemptAccumulatorsInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), SubtaskExecutionAttemptAccumulatorsInfo.class);
         }
     }
 
@@ -657,7 +667,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), SubtasksTimesInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), SubtasksTimesInfo.class);
         }
     }
 
@@ -669,7 +679,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobVertexTaskManagersInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobVertexTaskManagersInfo.class);
         }
     }
 
@@ -694,7 +704,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
         }
     }
 
@@ -706,7 +716,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
         }
     }
 
@@ -718,7 +728,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), TaskManagersInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TaskManagersInfo.class);
         }
     }
 
@@ -756,7 +766,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), TaskManagerDetailsInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TaskManagerDetailsInfo.class);
         }
     }
 
@@ -768,7 +778,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), LogListInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), LogListInfo.class);
         }
     }
 
@@ -795,7 +805,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), ThreadDumpInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), ThreadDumpInfo.class);
         }
     }
 

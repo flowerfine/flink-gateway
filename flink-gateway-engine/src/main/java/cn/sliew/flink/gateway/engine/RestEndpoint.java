@@ -81,12 +81,17 @@ public interface RestEndpoint {
      * Returns the dataflow plan of a job contained in a jar previously uploaded via '/jars/upload'.
      * Program arguments can be passed both via the JSON request (recommended) or query parameters.
      *
+     * @param jarId       String value that identifies a jar. When uploading the jar a path is returned, where the filename is the ID. This value is equivalent to the `id` field in the list of uploaded jars (/jars).
+     * @param requestBody
      */
     JobPlanInfo jarPlan(String jarId, JarPlanRequestBody requestBody) throws IOException;
 
     /**
      * Submits a job by running a jar previously uploaded via '/jars/upload'.
      * Program arguments can be passed both via the JSON request (recommended) or query parameters.
+     *
+     * @param jarId String value that identifies a jar. When uploading the jar a path is returned, where the filename is the ID. This value is equivalent to the `id` field in the list of uploaded jars (/jars).
+     * @param requestBody
      */
     JarRunResponseBody jarRun(String jarId, JarRunRequestBody requestBody) throws IOException;
 
