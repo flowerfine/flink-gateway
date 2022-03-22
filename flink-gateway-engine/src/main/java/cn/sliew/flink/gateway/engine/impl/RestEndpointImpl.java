@@ -178,7 +178,7 @@ public class RestEndpointImpl implements RestEndpoint {
     @Override
     public JobPlanInfo jarPlan(String jarId, JarPlanRequestBody requestBody) throws IOException {
         String url = webInterfaceURL + "/jars/" + jarId + "/plan";
-        RequestBody body = RequestBody.create(JacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
+        RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
@@ -192,7 +192,7 @@ public class RestEndpointImpl implements RestEndpoint {
     @Override
     public JarRunResponseBody jarRun(String jarId, JarRunRequestBody requestBody) throws IOException {
         String url = webInterfaceURL + "/jars/" + jarId + "/run";
-        RequestBody body = RequestBody.create(JacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
+        RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
@@ -257,7 +257,7 @@ public class RestEndpointImpl implements RestEndpoint {
     @Override
     public JobSubmitResponseBody jobSubmit(JobSubmitRequestBody requestBody) throws IOException {
         String url = webInterfaceURL + "/jobs";
-        RequestBody body = RequestBody.create(JacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
+        RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
@@ -469,7 +469,7 @@ public class RestEndpointImpl implements RestEndpoint {
     @Override
     public TriggerResponse jobSavepoint(String jobId, SavepointTriggerRequestBody requestBody) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/savepoints";
-        RequestBody body = RequestBody.create(JacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
+        RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
@@ -494,7 +494,7 @@ public class RestEndpointImpl implements RestEndpoint {
     @Override
     public TriggerResponse jobStop(String jobId, StopWithSavepointRequestBody requestBody) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/stop";
-        RequestBody body = RequestBody.create(JacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
+        RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
@@ -698,7 +698,7 @@ public class RestEndpointImpl implements RestEndpoint {
     @Override
     public TriggerResponse savepointDisposal(SavepointDisposalRequest requestBody) throws IOException {
         String url = webInterfaceURL + "/savepoint-disposal";
-        RequestBody body = RequestBody.create(JacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
+        RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
@@ -809,9 +809,9 @@ public class RestEndpointImpl implements RestEndpoint {
         }
     }
 
-    private void checkStatus(Response response) {
+    private void checkStatus(Response response) throws IOException {
         if (response.isSuccessful() == false) {
-            String error = String.format("code: %d, message: %s", response.code(), response.message());
+            String error = String.format("code: %d, message: %s, body: %s", response.code(), response.message(), response.body().string());
             throw new RuntimeException(error);
         }
     }

@@ -71,6 +71,9 @@ public class LogInterceptor implements Interceptor {
         if (requestBody == null) {
             return "";
         }
+        if (requestBody instanceof MultipartBody) {
+            return "";
+        }
         Buffer buffer = new Buffer();
         try {
             requestBody.writeTo(buffer);

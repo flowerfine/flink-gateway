@@ -1,6 +1,7 @@
 package cn.sliew.flink.engine.web.controller.flink;
 
 import cn.sliew.flink.gateway.engine.RestEndpoint;
+import cn.sliew.flink.gateway.engine.impl.FlinkShadedJacksonUtil;
 import cn.sliew.flink.gateway.engine.impl.RestEndpointImpl;
 import org.apache.flink.runtime.rest.messages.JobPlanInfo;
 import org.apache.flink.runtime.webmonitor.handlers.*;
@@ -36,6 +37,7 @@ public class JarController {
 
     @PostMapping("{jarId}/run")
     public JarRunResponseBody jarRun(@PathVariable("jarId") String jarId, @RequestBody JarRunRequestBody requestBody) throws IOException {
+        System.out.println(FlinkShadedJacksonUtil.OBJECT_MAPPER.writeValueAsString(requestBody));
         return endpoint.jarRun(jarId, requestBody);
     }
 }

@@ -7,15 +7,31 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessin
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.type.CollectionType;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.TimeZone;
 
 @Slf4j
 public enum FlinkShadedJacksonUtil {
     ;
 
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    static {
+        OBJECT_MAPPER.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+        OBJECT_MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+    }
+
+    public static String toJsonString(Object object) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(object);
+        } catch (JsonProcessingException var2) {
+            log.error("json 序列化失败 object: {}", object, var2);
+            Rethrower.throwAs(var2);
+            return null;
+        }
+    }
 
     public static <T> T parseJsonString(String json, Class<T> clazz) {
         try {
