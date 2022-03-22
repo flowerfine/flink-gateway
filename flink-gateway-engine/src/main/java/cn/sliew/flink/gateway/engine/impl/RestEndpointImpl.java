@@ -2,6 +2,8 @@ package cn.sliew.flink.gateway.engine.impl;
 
 import cn.sliew.flink.gateway.engine.RestEndpoint;
 import cn.sliew.milky.common.util.JacksonUtil;
+import okhttp3.OkHttpClient;
+import okhttp3.Response;
 import org.apache.flink.calcite.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.runtime.messages.webmonitor.JobIdsWithStatusOverview;
 import org.apache.flink.runtime.messages.webmonitor.MultipleJobsDetails;
@@ -27,11 +29,19 @@ import org.apache.hc.core5.util.Timeout;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 
 public class RestEndpointImpl implements RestEndpoint {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private static final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(Duration.ofSeconds(3L))
+            .readTimeout(Duration.ofSeconds(3L))
+            .writeTimeout(Duration.ofSeconds(3L))
+            .callTimeout(Duration.ofSeconds(3L))
+            .build();
 
     private final String webInterfaceURL;
 
@@ -41,11 +51,13 @@ public class RestEndpointImpl implements RestEndpoint {
 
     @Override
     public boolean cluster() throws IOException {
-        HttpResponse response = Request.delete(webInterfaceURL + "/cluster")
-                .connectTimeout(Timeout.ofSeconds(3L))
-                .responseTimeout(Timeout.ofSeconds(3L))
-                .execute().returnResponse();
-        return response.getCode() == HttpStatus.SC_SUCCESS;
+        okhttp3.Request build = new okhttp3.Request.Builder()
+                .get()
+                .url(webInterfaceURL + "/cluster")
+                .build();
+        try (Response response = client.newCall(build).execute()) {
+            return response.isSuccessful();
+        }
     }
 
     @Override
