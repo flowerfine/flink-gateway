@@ -34,7 +34,7 @@ public interface RestEndpoint {
     /**
      * Shuts down the cluster
      */
-    boolean cluster() throws IOException;
+    boolean shutdownCluster() throws IOException;
 
     /**
      * Returns the configuration of the WebUI.
@@ -72,12 +72,15 @@ public interface RestEndpoint {
 
     /**
      * Deletes a jar previously uploaded via '/jars/upload'.
+     *
+     * @param jarId String value that identifies a jar. When uploading the jar a path is returned, where the filename is the ID. This value is equivalent to the `id` field in the list of uploaded jars (/jars).
      */
     boolean deleteJar(String jarId) throws IOException;
 
     /**
      * Returns the dataflow plan of a job contained in a jar previously uploaded via '/jars/upload'.
      * Program arguments can be passed both via the JSON request (recommended) or query parameters.
+     *
      */
     JobPlanInfo jarPlan(String jarId, JarPlanRequestBody requestBody) throws IOException;
 

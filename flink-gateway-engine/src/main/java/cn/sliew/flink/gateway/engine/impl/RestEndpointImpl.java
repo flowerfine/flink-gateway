@@ -60,18 +60,20 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
             return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), ClusterOverviewWithVersion.class);
         }
     }
 
     @Override
-    public boolean cluster() throws IOException {
+    public boolean shutdownCluster() throws IOException {
         String url = webInterfaceURL + "/cluster";
         Request request = new Request.Builder()
-                .get()
+                .delete()
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
             return response.isSuccessful();
         }
     }
@@ -84,7 +86,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), DashboardConfiguration.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), DashboardConfiguration.class);
         }
     }
 
@@ -96,7 +98,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), ClusterDataSetListResponseBody.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), ClusterDataSetListResponseBody.class);
         }
     }
 
@@ -108,7 +110,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
         }
     }
 
@@ -120,7 +122,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
         }
     }
 
@@ -132,7 +134,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JarListInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JarListInfo.class);
         }
     }
 
@@ -149,7 +151,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JarUploadResponseBody.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JarUploadResponseBody.class);
         }
     }
 
@@ -174,7 +176,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JobPlanInfo.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobPlanInfo.class);
         }
     }
 
@@ -187,7 +189,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return JacksonUtil.parseJsonString(response.body().string(), JarRunResponseBody.class);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JarRunResponseBody.class);
         }
     }
 
@@ -794,6 +796,13 @@ public class RestEndpointImpl implements RestEndpoint {
                 .build();
         try (Response response = client.newCall(request).execute()) {
             return JacksonUtil.parseJsonString(response.body().string(), ThreadDumpInfo.class);
+        }
+    }
+
+    private void checkStatus(Response response) {
+        if (response.isSuccessful() == false) {
+            String error = String.format("code: %d, message: %s", response.code(), response.message());
+            throw new RuntimeException(error);
         }
     }
 }
