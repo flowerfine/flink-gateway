@@ -1,19 +1,22 @@
 package cn.sliew.flink.engine.web.controller;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import cn.sliew.flink.gateway.engine.RestEndpoint;
+import cn.sliew.flink.gateway.engine.impl.RestEndpointImpl;
+import org.apache.flink.runtime.rest.handler.legacy.messages.ClusterOverviewWithVersion;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/flink")
-@Tag(name = "/flink", description = "Flink 接口")
 public class FlinkController {
 
-    @DeleteMapping("cluster")
-    @ApiOperation("关闭集群")
-    public void shutdown() {
+    private RestEndpoint endpoint = new RestEndpointImpl("http://localhost:8081");
 
+    @GetMapping("overview")
+    public ClusterOverviewWithVersion overview() throws IOException {
+        return endpoint.overview();
     }
 }
