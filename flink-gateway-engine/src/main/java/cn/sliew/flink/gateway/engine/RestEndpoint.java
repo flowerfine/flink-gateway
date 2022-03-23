@@ -393,7 +393,7 @@ public interface RestEndpoint {
     /**
      * Returns an overview over all task managers.
      */
-    TaskManagersInfo taskManagersDetail() throws IOException;
+    TaskManagersInfo taskManagers() throws IOException;
 
     /**
      * Provides access to aggregated task manager metrics.
@@ -402,7 +402,7 @@ public interface RestEndpoint {
      * @param agg(optional)          Comma-separated list of aggregation modes which should be calculated. Available aggregations are: "min, max, sum, avg".
      * @param taskmanagers(optional) Comma-separated list of 32-character hexadecimal strings to select specific task managers.
      */
-    String taskManagersMetrics(String get, String agg, String taskmanagers) throws IOException;
+    List<Map> taskManagersMetrics(String get, String agg, String taskmanagers) throws IOException;
 
     /**
      * Returns details for a task manager.

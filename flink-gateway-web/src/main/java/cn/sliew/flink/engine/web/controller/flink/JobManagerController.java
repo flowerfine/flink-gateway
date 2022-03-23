@@ -29,10 +29,11 @@ public class JobManagerController {
         return endpoint.jobmanagerLogs();
     }
 
+    /**
+     * todo 换成 2 接口
+     */
     @GetMapping("metrics")
     public List<Map> metrics(@RequestParam(value = "get", required = false) String get) throws IOException {
         return endpoint.jobmanagerMetrics(get);
     }
-
-
 }

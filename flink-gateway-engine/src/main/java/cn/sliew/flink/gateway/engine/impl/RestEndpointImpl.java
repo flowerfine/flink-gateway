@@ -2,7 +2,6 @@ package cn.sliew.flink.gateway.engine.impl;
 
 import cn.sliew.flink.gateway.engine.RestEndpoint;
 import cn.sliew.milky.common.check.Ensures;
-import cn.sliew.milky.common.util.JacksonUtil;
 import cn.sliew.milky.common.util.StringUtils;
 import okhttp3.RequestBody;
 import okhttp3.*;
@@ -239,8 +238,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            String json = response.body().string();
-            return FlinkShadedJacksonUtil.parseJsonArray(json, Map.class);
+            return FlinkShadedJacksonUtil.parseJsonArray(response.body().string(), Map.class);
         }
     }
 
@@ -723,7 +721,7 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public TaskManagersInfo taskManagersDetail() throws IOException {
+    public TaskManagersInfo taskManagers() throws IOException {
         String url = webInterfaceURL + "/taskmanagers";
         Request request = new Request.Builder()
                 .get()
@@ -735,7 +733,7 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public String taskManagersMetrics(String get, String agg, String taskmanagers) throws IOException {
+    public List<Map> taskManagersMetrics(String get, String agg, String taskmanagers) throws IOException {
         String url = webInterfaceURL + "/taskmanagers/metrics";
         List<String> queryParams = new LinkedList<>();
         if (StringUtils.isNotBlank(get)) {
@@ -756,7 +754,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            return FlinkShadedJacksonUtil.parseJsonArray(response.body().string(), Map.class);
         }
     }
 
