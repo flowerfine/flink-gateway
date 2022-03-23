@@ -23,8 +23,14 @@ import org.apache.flink.runtime.webmonitor.threadinfo.JobVertexFlameGraph;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface RestEndpoint {
+
+    /**
+     * Returns the configuration of the WebUI.
+     */
+    DashboardConfiguration config() throws IOException;
 
     /**
      * Returns an overview over the Flink cluster.
@@ -35,11 +41,6 @@ public interface RestEndpoint {
      * Shuts down the cluster
      */
     boolean shutdownCluster() throws IOException;
-
-    /**
-     * Returns the configuration of the WebUI.
-     */
-    DashboardConfiguration config() throws IOException;
 
     /**
      * Returns all cluster data sets.
@@ -108,7 +109,7 @@ public interface RestEndpoint {
     /**
      * Provides access to job manager metrics.
      */
-    String jobmanagerMetrics(String get) throws IOException;
+    List<Map> jobmanagerMetrics(String get) throws IOException;
 
     /**
      * Returns an overview over all jobs and their current state.

@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class RestEndpointImpl implements RestEndpoint {
@@ -51,6 +52,19 @@ public class RestEndpointImpl implements RestEndpoint {
 
     public RestEndpointImpl(String webInterfaceURL) {
         this.webInterfaceURL = webInterfaceURL;
+    }
+
+    @Override
+    public DashboardConfiguration config() throws IOException {
+        String url = webInterfaceURL + "/config";
+        Request request = new Request.Builder()
+                .get()
+                .url(url)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            checkStatus(response);
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), DashboardConfiguration.class);
+        }
     }
 
     @Override
@@ -76,19 +90,6 @@ public class RestEndpointImpl implements RestEndpoint {
         try (Response response = client.newCall(request).execute()) {
             checkStatus(response);
             return response.isSuccessful();
-        }
-    }
-
-    @Override
-    public DashboardConfiguration config() throws IOException {
-        String url = webInterfaceURL + "/config";
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), DashboardConfiguration.class);
         }
     }
 
@@ -228,7 +229,7 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public String jobmanagerMetrics(String get) throws IOException {
+    public List<Map> jobmanagerMetrics(String get) throws IOException {
         String url = webInterfaceURL + "/jobmanager/metrics";
         if (StringUtils.isNotBlank(get)) {
             url = url + "?get=" + get;
@@ -238,7 +239,8 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            String json = response.body().string();
+            return FlinkShadedJacksonUtil.parseJsonArray(json, Map.class);
         }
     }
 
