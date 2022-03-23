@@ -243,6 +243,23 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
+    public MultipleJobsDetails jobsOverview() throws IOException {
+        String url = webInterfaceURL + "/jobs/overview";
+        Request request = new Request.Builder()
+                .get()
+                .url(url)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), MultipleJobsDetails.class);
+        }
+    }
+
+    @Override
+    public String jobsMetric(String get, String agg, String jobs) throws IOException {
+        return null;
+    }
+
+    @Override
     public JobIdsWithStatusOverview jobs() throws IOException {
         String url = webInterfaceURL + "/jobs";
         Request request = new Request.Builder()
@@ -251,6 +268,18 @@ public class RestEndpointImpl implements RestEndpoint {
                 .build();
         try (Response response = client.newCall(request).execute()) {
             return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobIdsWithStatusOverview.class);
+        }
+    }
+
+    @Override
+    public JobDetailsInfo jobDetail(String jobId) throws IOException {
+        String url = webInterfaceURL + "/jobs/" + jobId;
+        Request request = new Request.Builder()
+                .get()
+                .url(url)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobDetailsInfo.class);
         }
     }
 
@@ -267,34 +296,11 @@ public class RestEndpointImpl implements RestEndpoint {
         }
     }
 
-    @Override
-    public String jobsMetric(String get, String agg, String jobs) throws IOException {
-        return null;
-    }
 
-    @Override
-    public MultipleJobsDetails jobsOverview() throws IOException {
-        String url = webInterfaceURL + "/jobs/overview";
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), MultipleJobsDetails.class);
-        }
-    }
 
-    @Override
-    public JobDetailsInfo jobDetail(String jobId) throws IOException {
-        String url = webInterfaceURL + "/jobs/" + jobId;
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobDetailsInfo.class);
-        }
-    }
+
+
+
 
     @Override
     public boolean jobTerminate(String jobId, String mode) throws IOException {
@@ -354,7 +360,7 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public CheckpointStatistics jobCheckpointDetail(String jobId, String checkpointId) throws IOException {
+    public CheckpointStatistics jobCheckpointDetail(String jobId, Long checkpointId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/checkpoints/details/" + checkpointId;
         Request request = new Request.Builder()
                 .get()
@@ -366,7 +372,7 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public TaskCheckpointStatisticsWithSubtaskDetails jobCheckpointSubtaskDetail(String jobId, String checkpointId, String vertexId) throws IOException {
+    public TaskCheckpointStatisticsWithSubtaskDetails jobCheckpointSubtaskDetail(String jobId, Long checkpointId, String vertexId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/checkpoints/details/" + checkpointId + "/subtasks/" + vertexId;
         Request request = new Request.Builder()
                 .get()
@@ -378,20 +384,23 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public String jobConfig(String jobId) throws IOException {
+    public Map jobConfig(String jobId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/config";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), Map.class);
         }
     }
 
     @Override
     public JobExceptionsInfoWithHistory jobException(String jobId, String maxExceptions) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/exceptions";
+        if (StringUtils.isNotBlank(maxExceptions)) {
+            url = url + "?maxExceptions=" + maxExceptions;
+        }
         Request request = new Request.Builder()
                 .get()
                 .url(url)
@@ -414,7 +423,7 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public String jobMetrics(String jobId, String get) throws IOException {
+    public List<Map> jobMetrics(String jobId, String get) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/metrics";
         if (StringUtils.isNotBlank(get)) {
             url = url + "?get=" + get;
@@ -424,7 +433,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            return FlinkShadedJacksonUtil.parseJsonArray(response.body().string(), Map.class);
         }
     }
 
@@ -783,7 +792,7 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public String taskManagerMetrics(String taskManagerId, String get) throws IOException {
+    public List<Map> taskManagerMetrics(String taskManagerId, String get) throws IOException {
         String url = webInterfaceURL + "/taskmanagers/" + taskManagerId + "/metrics";
         if (StringUtils.isNotBlank(get)) {
             url = url + "?get=" + get;
@@ -793,7 +802,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            return FlinkShadedJacksonUtil.parseJsonArray(response.body().string(), Map.class);
         }
     }
 

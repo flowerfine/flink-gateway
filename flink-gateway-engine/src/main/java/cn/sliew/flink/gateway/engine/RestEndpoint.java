@@ -91,7 +91,7 @@ public interface RestEndpoint {
      * Submits a job by running a jar previously uploaded via '/jars/upload'.
      * Program arguments can be passed both via the JSON request (recommended) or query parameters.
      *
-     * @param jarId String value that identifies a jar. When uploading the jar a path is returned, where the filename is the ID. This value is equivalent to the `id` field in the list of uploaded jars (/jars).
+     * @param jarId       String value that identifies a jar. When uploading the jar a path is returned, where the filename is the ID. This value is equivalent to the `id` field in the list of uploaded jars (/jars).
      * @param requestBody
      */
     JarRunResponseBody jarRun(String jarId, JarRunRequestBody requestBody) throws IOException;
@@ -112,67 +112,94 @@ public interface RestEndpoint {
     List<Map> jobmanagerMetrics(String get) throws IOException;
 
     /**
+     * Returns an overview over all jobs.
+     */
+    MultipleJobsDetails jobsOverview() throws IOException;
+
+    /**
+     * Provides access to aggregated job metrics.
+     *
+     * @param get(optional)  Comma-separated list of string values to select specific metrics.
+     * @param agg(optional)  Comma-separated list of aggregation modes which should be calculated. Available aggregations are: "min, max, sum, avg".
+     * @param jobs(optional) Comma-separated list of 32-character hexadecimal strings to select specific jobs.
+     */
+    String jobsMetric(String get, String agg, String jobs) throws IOException;
+
+    /**
      * Returns an overview over all jobs and their current state.
      */
     JobIdsWithStatusOverview jobs() throws IOException;
+
+    /**
+     * Returns details of a job.
+     *
+     * @param jobId 32-character hexadecimal string value that identifies a job.
+     */
+    JobDetailsInfo jobDetail(String jobId) throws IOException;
 
     /**
      * Submits a job.
      * This call is primarily intended to be used by the Flink client.
      * This call expects a multipart/form-data request that consists of file uploads for the serialized JobGraph,
      * jars and distributed cache artifacts and an attribute named "request" for the JSON payload.
+     *
+     * @param requestBody
      */
     JobSubmitResponseBody jobSubmit(JobSubmitRequestBody requestBody) throws IOException;
 
     /**
-     * Provides access to aggregated job metrics.
-     */
-    String jobsMetric(String get, String agg, String jobs) throws IOException;
-
-    /**
-     * Returns an overview over all jobs.
-     */
-    MultipleJobsDetails jobsOverview() throws IOException;
-
-    /**
-     * Returns details of a job.
-     */
-    JobDetailsInfo jobDetail(String jobId) throws IOException;
-
-    /**
      * Terminates a job.
+     *
+     * @param jobId          32-character hexadecimal string value that identifies a job.
+     * @param mode(optional) String value that specifies the termination mode. The only supported value is: "cancel".
      */
     boolean jobTerminate(String jobId, String mode) throws IOException;
 
     /**
      * Returns the accumulators for all tasks of a job, aggregated across the respective subtasks.
+     *
+     * @param jobId                            32-character hexadecimal string value that identifies a job.
+     * @param includeSerializedValue(optional) Boolean value that specifies whether serialized user task accumulators should be included in the response.
      */
     JobAccumulatorsInfo jobAccumulators(String jobId, Boolean includeSerializedValue) throws IOException;
 
     /**
      * Returns checkpointing statistics for a job.
+     *
+     * @param jobId 32-character hexadecimal string value that identifies a job.
      */
     CheckpointingStatistics jobCheckpoints(String jobId) throws IOException;
 
     /**
      * Returns the checkpointing configuration.
+     *
+     * @param jobId 32-character hexadecimal string value that identifies a job.
      */
     CheckpointConfigInfo jobCheckpointConfig(String jobId) throws IOException;
 
     /**
      * Returns details for a checkpoint.
+     *
+     * @param jobId        32-character hexadecimal string value that identifies a job.
+     * @param checkpointId Long value that identifies a checkpoint.
      */
-    CheckpointStatistics jobCheckpointDetail(String jobId, String checkpointId) throws IOException;
+    CheckpointStatistics jobCheckpointDetail(String jobId, Long checkpointId) throws IOException;
 
     /**
      * Returns checkpoint statistics for a task and its subtasks.
+     *
+     * @param jobId        32-character hexadecimal string value that identifies a job.
+     * @param checkpointId Long value that identifies a checkpoint.
+     * @param vertexId     32-character hexadecimal string value that identifies a job vertex.
      */
-    TaskCheckpointStatisticsWithSubtaskDetails jobCheckpointSubtaskDetail(String jobId, String checkpointId, String vertexId) throws IOException;
+    TaskCheckpointStatisticsWithSubtaskDetails jobCheckpointSubtaskDetail(String jobId, Long checkpointId, String vertexId) throws IOException;
 
     /**
      * Returns the configuration of a job.
+     *
+     * @param jobId 32-character hexadecimal string value that identifies a job.
      */
-    String jobConfig(String jobId) throws IOException;
+    Map jobConfig(String jobId) throws IOException;
 
     /**
      * Returns the most recent exceptions that have been handled by Flink for this job.
@@ -181,12 +208,17 @@ public interface RestEndpoint {
      * This can be configured through web.exception-history-size in the Flink configuration.
      * The following first-level members are deprecated: 'root-exception', 'timestamp', 'all-exceptions', and 'truncated'.
      * Use the data provided through 'exceptionHistory', instead.
+     *
+     * @param jobId                   32-character hexadecimal string value that identifies a job.
+     * @param maxExceptions(optional) Comma-separated list of integer values that specifies the upper limit of exceptions to return.
      */
     JobExceptionsInfoWithHistory jobException(String jobId, String maxExceptions) throws IOException;
 
     /**
      * Returns the result of a job execution.
      * Gives access to the execution time of the job and to all accumulators created by this job.
+     *
+     * @param jobId 32-character hexadecimal string value that identifies a job.
      */
     JobExecutionResultResponseBody jobExecutionResult(String jobId) throws IOException;
 
@@ -196,7 +228,7 @@ public interface RestEndpoint {
      * @param jobId         32-character hexadecimal string value that identifies a job.
      * @param get(optional) Comma-separated list of string values to select specific metrics.
      */
-    String jobMetrics(String jobId, String get) throws IOException;
+    List<Map> jobMetrics(String jobId, String get) throws IOException;
 
     /**
      * Returns the dataflow plan of a job.
@@ -298,7 +330,6 @@ public interface RestEndpoint {
      */
     SubtasksAllAccumulatorsInfo jobVertexSubtaskAccumulators(String jobId, String vertexId) throws IOException;
 
-
     /**
      * Provides access to aggregated subtask metrics.
      *
@@ -350,7 +381,6 @@ public interface RestEndpoint {
      * @param get(optional) Comma-separated list of string values to select specific metrics.
      */
     String jobVertexSubtaskMetrics(String jobId, String vertexId, Integer subtaskindex, String get) throws IOException;
-
 
     /**
      * Returns time-related information for all subtasks of a task.
@@ -426,7 +456,7 @@ public interface RestEndpoint {
      * @param taskManagerId 32-character hexadecimal string that identifies a task manager.
      * @param get(optional) Comma-separated list of string values to select specific metrics.
      */
-    String taskManagerMetrics(String taskManagerId, String get) throws IOException;
+    List<Map> taskManagerMetrics(String taskManagerId, String get) throws IOException;
 
     /**
      * Returns the thread dump of the requested TaskManager.

@@ -61,7 +61,7 @@ public class LogInterceptor implements Interceptor {
                 .collect(Collectors.joining("\n"));
         long duration = response.receivedResponseAtMillis() - response.sentRequestAtMillis();
         if (log.isInfoEnabled()) {
-            log.info("请求耗时: {}ms, code: {}, message: {}, requestBody: {}, headers: \n{}",
+            log.info("请求耗时: {}ms, code: {}, message: {}, responseBody: {}, headers: \n{}",
                     duration, code, message, responseBody, headers);
         }
 
