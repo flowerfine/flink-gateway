@@ -1,6 +1,6 @@
 package cn.sliew.flink.engine.web.http.message;
 
-import cn.sliew.flink.gateway.engine.impl.FlinkShadedJacksonUtil;
+import cn.sliew.flink.gateway.engine.util.FlinkShadedJacksonUtil;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonGenerator;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;

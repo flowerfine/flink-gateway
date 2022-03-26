@@ -1,16 +1,14 @@
 package org.apache.flink.configuration;
 
 import cn.sliew.milky.common.exception.Rethrower;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.apache.flink.configuration.description.Formatter;
 import org.apache.flink.configuration.description.HtmlFormatter;
-import org.springframework.boot.jackson.JsonComponent;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonGenerator;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.SerializerProvider;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 
-@JsonComponent
 public class ConfigOptionSerializer extends StdSerializer<ConfigOption> {
 
     private final Formatter formatter = new HtmlFormatter();
@@ -30,12 +28,14 @@ public class ConfigOptionSerializer extends StdSerializer<ConfigOption> {
             jsonGenerator.writeObjectField("defaultValue", option.defaultValue());
         }
         if (option.hasFallbackKeys()) {
-            jsonGenerator.writeStartArray("fallbackKey");
+            jsonGenerator.writeArrayFieldStart("fallbackKeys");
             Iterable<FallbackKey> iterable = option.fallbackKeys();
             iterable.forEach(fallbackKey -> {
                 try {
+                    jsonGenerator.writeStartObject();
                     jsonGenerator.writeStringField("key", fallbackKey.getKey());
                     jsonGenerator.writeBooleanField("deprecated", fallbackKey.isDeprecated());
+                    jsonGenerator.writeEndObject();
                 } catch (IOException e) {
                     Rethrower.throwAs(e);
                 }

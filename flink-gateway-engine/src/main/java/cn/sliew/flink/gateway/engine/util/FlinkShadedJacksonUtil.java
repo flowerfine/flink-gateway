@@ -1,5 +1,6 @@
-package cn.sliew.flink.gateway.engine.impl;
+package cn.sliew.flink.gateway.engine.util;
 
+import cn.sliew.flink.gateway.engine.json.FlinkShadedModule;
 import cn.sliew.milky.common.exception.Rethrower;
 import cn.sliew.milky.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ public enum FlinkShadedJacksonUtil {
     static {
         OBJECT_MAPPER.setTimeZone(TimeZone.getTimeZone("GMT+8"));
         OBJECT_MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+        OBJECT_MAPPER.registerModule(new FlinkShadedModule());
     }
 
     public static String toJsonString(Object object) {

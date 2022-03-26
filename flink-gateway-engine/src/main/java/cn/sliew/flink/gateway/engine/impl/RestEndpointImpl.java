@@ -1,6 +1,7 @@
 package cn.sliew.flink.gateway.engine.impl;
 
 import cn.sliew.flink.gateway.engine.RestEndpoint;
+import cn.sliew.flink.gateway.engine.util.FlinkShadedJacksonUtil;
 import cn.sliew.milky.common.check.Ensures;
 import cn.sliew.milky.common.util.StringUtils;
 import okhttp3.RequestBody;
