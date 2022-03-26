@@ -14,5 +14,7 @@ public interface ParameterHandler<T> {
 
     ConfigOption<T> getOption();
 
+    T getValue();
+
     void apply(Configuration configuration);
 }
