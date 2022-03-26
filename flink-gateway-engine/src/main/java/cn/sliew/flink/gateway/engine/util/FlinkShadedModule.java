@@ -1,4 +1,4 @@
-package cn.sliew.flink.gateway.engine.json;
+package cn.sliew.flink.gateway.engine.util;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptionSerializer;
