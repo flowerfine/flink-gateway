@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.apache.flink.client.deployment.executors.RemoteExecutor;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.DeploymentOptions;
+import org.apache.flink.core.execution.PipelineExecutorFactory;
 import org.apache.flink.kubernetes.configuration.KubernetesDeploymentTarget;
 import org.apache.flink.yarn.configuration.YarnDeploymentTarget;
 
@@ -23,6 +24,10 @@ public enum DeploymentTarget {
 
     private ResourceProvider resourceProvider;
     private DeploymentMode deploymentMode;
+
+    /**
+     * @see PipelineExecutorFactory#getName()
+     */
     private String name;
 
     DeploymentTarget(ResourceProvider resourceProvider, DeploymentMode deploymentMode, String name) {
