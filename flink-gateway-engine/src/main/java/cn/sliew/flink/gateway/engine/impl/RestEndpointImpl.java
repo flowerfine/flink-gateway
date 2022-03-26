@@ -57,7 +57,7 @@ public class RestEndpointImpl implements RestEndpoint {
 
     @Override
     public DashboardConfiguration config() throws IOException {
-        String url = webInterfaceURL + "/config";
+        String url = webInterfaceURL + ClusterConfigurationInfoHeaders.CLUSTER_CONFIG_REST_PATH;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
@@ -70,7 +70,7 @@ public class RestEndpointImpl implements RestEndpoint {
 
     @Override
     public ClusterOverviewWithVersion overview() throws IOException {
-        String url = webInterfaceURL + "/overview";
+        String url = webInterfaceURL + ClusterOverviewHeaders.URL;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
