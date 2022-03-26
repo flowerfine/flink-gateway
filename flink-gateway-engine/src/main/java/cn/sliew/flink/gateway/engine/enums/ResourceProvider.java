@@ -1,4 +1,4 @@
-package cn.sliew.flink.gateway.engine;
+package cn.sliew.flink.gateway.engine.enums;
 
 import lombok.Getter;
 
