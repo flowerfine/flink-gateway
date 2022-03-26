@@ -24,6 +24,7 @@ import org.apache.flink.runtime.rest.messages.job.savepoints.stop.StopWithSavepo
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagerDetailsInfo;
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagersInfo;
 import org.apache.flink.runtime.rest.messages.taskmanager.ThreadDumpInfo;
+import org.apache.flink.runtime.rest.util.RestConstants;
 import org.apache.flink.runtime.webmonitor.handlers.*;
 import org.apache.flink.runtime.webmonitor.threadinfo.JobVertexFlameGraph;
 
@@ -37,7 +38,7 @@ import java.util.stream.Collectors;
 
 public class RestEndpointImpl implements RestEndpoint {
 
-    public static final MediaType APPLICATION_JSON = MediaType.get("application/json; charset=utf-8");
+    public static final MediaType APPLICATION_JSON = MediaType.get(RestConstants.REST_CONTENT_TYPE);
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(Duration.ofSeconds(3L))
@@ -150,7 +151,7 @@ public class RestEndpointImpl implements RestEndpoint {
         File jarFile = new File(filePath);
         MultipartBody body = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("jarfile", jarFile.getName(), RequestBody.create(jarFile, MediaType.get("application/java-archive")))
+                .addFormDataPart("jarfile", jarFile.getName(), RequestBody.create(jarFile, MediaType.get(RestConstants.CONTENT_TYPE_JAR)))
                 .build();
         Request request = new Request.Builder()
                 .post(body)
@@ -295,12 +296,6 @@ public class RestEndpointImpl implements RestEndpoint {
             return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobSubmitResponseBody.class);
         }
     }
-
-
-
-
-
-
 
     @Override
     public boolean jobTerminate(String jobId, String mode) throws IOException {

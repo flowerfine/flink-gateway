@@ -7,6 +7,8 @@ import org.apache.flink.client.deployment.application.cli.ApplicationClusterDepl
 
 public class FlinkApplicationService {
 
+    private final ClusterClientServiceLoader clusterClientServiceLoader = new DefaultClusterClientServiceLoader();
+
     public void submit() throws Exception {
         final ClusterClientServiceLoader clusterClientServiceLoader =
                 new DefaultClusterClientServiceLoader();
