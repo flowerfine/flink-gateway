@@ -3,6 +3,7 @@ package cn.sliew.flink.gateway.engine.impl;
 import cn.sliew.milky.common.exception.Rethrower;
 import cn.sliew.milky.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.flink.runtime.rest.util.RestMapperUtils;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.type.CollectionType;
@@ -17,7 +18,7 @@ import java.util.TimeZone;
 public enum FlinkShadedJacksonUtil {
     ;
 
-    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    public static final ObjectMapper OBJECT_MAPPER = RestMapperUtils.getStrictObjectMapper();
     static {
         OBJECT_MAPPER.setTimeZone(TimeZone.getTimeZone("GMT+8"));
         OBJECT_MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));

@@ -25,6 +25,7 @@ import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagerDetailsInfo
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagersInfo;
 import org.apache.flink.runtime.rest.messages.taskmanager.ThreadDumpInfo;
 import org.apache.flink.runtime.rest.util.RestConstants;
+import org.apache.flink.runtime.rest.versioning.RestAPIVersion;
 import org.apache.flink.runtime.webmonitor.handlers.*;
 import org.apache.flink.runtime.webmonitor.threadinfo.JobVertexFlameGraph;
 
@@ -51,7 +52,7 @@ public class RestEndpointImpl implements RestEndpoint {
     private final String webInterfaceURL;
 
     public RestEndpointImpl(String webInterfaceURL) {
-        this.webInterfaceURL = webInterfaceURL;
+        this.webInterfaceURL = webInterfaceURL + "/" + RestAPIVersion.V1.getURLVersionPrefix();
     }
 
     @Override
