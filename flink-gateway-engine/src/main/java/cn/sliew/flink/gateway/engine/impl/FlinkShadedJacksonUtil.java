@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.runtime.rest.util.RestMapperUtils;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.SerializationConfig;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ser.SerializerFactory;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.type.CollectionType;
 
 import java.text.SimpleDateFormat;
