@@ -36,8 +36,7 @@ public enum DeploymentTarget {
         this.name = name;
     }
 
-    public Configuration toConfiguration(Configuration configuration) {
+    public void apply(Configuration configuration) {
         configuration.set(DeploymentOptions.TARGET, getName());
-        return configuration;
     }
 }
