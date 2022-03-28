@@ -198,9 +198,9 @@ public abstract class AbstractFlinkShardedJackson2HttpMessageConverter extends A
             return false;
         }
         JavaType javaType = getJavaType(type, contextClass);
-        if (javaType.getTypeName().startsWith("org.apache.flink") == false) {
-            return false;
-        }
+//        if (javaType.getTypeName().startsWith("org.apache.flink") == false) {
+//            return false;
+//        }
         ObjectMapper objectMapper = selectObjectMapper(javaType.getRawClass(), mediaType);
         if (objectMapper == null) {
             return false;
@@ -224,9 +224,9 @@ public abstract class AbstractFlinkShardedJackson2HttpMessageConverter extends A
                 return false;
             }
         }
-        if (clazz.getCanonicalName().startsWith("org.apache.flink") == false) {
-            return false;
-        }
+//        if (clazz.getCanonicalName().startsWith("org.apache.flink") == false) {
+//            return false;
+//        }
         ObjectMapper objectMapper = selectObjectMapper(clazz, mediaType);
         if (objectMapper == null) {
             return false;
