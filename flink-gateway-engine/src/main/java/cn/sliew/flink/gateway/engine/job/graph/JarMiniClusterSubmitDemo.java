@@ -18,7 +18,10 @@ import java.net.URI;
 import java.util.concurrent.ExecutionException;
 
 /**
- * 1. start nc
+ * --add-opens java.base/java.lang=ALL-UNNAMED
+ * 1. start nc server: nc -l 9000
+ * 2. bootstrap demo. for jdk 17, must add vm options: --add-opens java.base/java.lang=ALL-UNNAMED
+ * 3. type some words to nc, and response on console
  */
 public class JarMiniClusterSubmitDemo {
 
