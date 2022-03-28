@@ -1,4 +1,4 @@
-package cn.sliew.flink.gateway.engine.impl;
+package cn.sliew.flink.gateway.engine.endpoint.impl;
 
 import cn.sliew.milky.common.exception.Rethrower;
 import lombok.extern.slf4j.Slf4j;

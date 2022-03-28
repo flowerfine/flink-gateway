@@ -1,4 +1,4 @@
-package cn.sliew.flink.gateway.engine;
+package cn.sliew.flink.gateway.engine.endpoint;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.Configuration;

@@ -1,4 +1,4 @@
-package cn.sliew.flink.gateway.engine;
+package cn.sliew.flink.gateway.engine.endpoint;
 
 import org.apache.flink.runtime.messages.webmonitor.JobIdsWithStatusOverview;
 import org.apache.flink.runtime.messages.webmonitor.MultipleJobsDetails;

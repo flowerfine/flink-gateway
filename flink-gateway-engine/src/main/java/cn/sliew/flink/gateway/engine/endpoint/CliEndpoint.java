@@ -1,4 +1,4 @@
-package cn.sliew.flink.gateway.engine;
+package cn.sliew.flink.gateway.engine.endpoint;
 
 import cn.sliew.flink.gateway.engine.enums.DeploymentTarget;
 import org.apache.flink.client.cli.ProgramOptions;

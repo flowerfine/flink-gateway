@@ -1,7 +1,7 @@
 package cn.sliew.flink.engine.web.controller.flink;
 
-import cn.sliew.flink.gateway.engine.RestEndpoint;
-import cn.sliew.flink.gateway.engine.impl.RestEndpointImpl;
+import cn.sliew.flink.gateway.engine.endpoint.RestEndpoint;
+import cn.sliew.flink.gateway.engine.endpoint.impl.RestEndpointImpl;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationResult;
 import org.apache.flink.runtime.rest.handler.async.TriggerResponse;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointDisposalRequest;
