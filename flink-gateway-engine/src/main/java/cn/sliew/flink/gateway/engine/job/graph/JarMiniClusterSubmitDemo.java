@@ -8,7 +8,6 @@ import org.apache.flink.client.program.PackagedProgramUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.DeploymentOptions;
 import org.apache.flink.configuration.JobManagerOptions;
-import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.runtime.jobgraph.JobGraph;
 import org.apache.flink.runtime.minicluster.MiniCluster;
 import org.apache.flink.runtime.minicluster.MiniClusterConfiguration;
@@ -54,13 +53,9 @@ public class JarMiniClusterSubmitDemo {
 
     private static MiniClusterClient newClusterClient(MiniCluster cluster, Configuration config) throws ExecutionException, InterruptedException {
         URI address = cluster.getRestAddress().get();
-
         config.setString(JobManagerOptions.ADDRESS, address.getHost());
         config.setInteger(JobManagerOptions.PORT, address.getPort());
-        config.setString(RestOptions.ADDRESS, address.getHost());
-        config.setInteger(RestOptions.PORT, address.getPort());
         config.setString(DeploymentOptions.TARGET, LocalExecutor.NAME);
-
         return new MiniClusterClient(config, cluster);
     }
 }
