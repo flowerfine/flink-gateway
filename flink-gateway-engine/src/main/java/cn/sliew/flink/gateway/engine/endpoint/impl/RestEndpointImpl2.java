@@ -13,9 +13,12 @@ import org.apache.flink.runtime.rest.messages.checkpoints.CheckpointConfigInfo;
 import org.apache.flink.runtime.rest.messages.checkpoints.CheckpointStatistics;
 import org.apache.flink.runtime.rest.messages.checkpoints.CheckpointingStatistics;
 import org.apache.flink.runtime.rest.messages.checkpoints.TaskCheckpointStatisticsWithSubtaskDetails;
-import org.apache.flink.runtime.rest.messages.dataset.ClusterDataSetListResponseBody;
+import org.apache.flink.runtime.rest.messages.cluster.ShutdownHeaders;
+import org.apache.flink.runtime.rest.messages.dataset.*;
 import org.apache.flink.runtime.rest.messages.job.*;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointDisposalRequest;
+import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointTriggerHeaders;
+import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointTriggerMessageParameters;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointTriggerRequestBody;
 import org.apache.flink.runtime.rest.messages.job.savepoints.stop.StopWithSavepointRequestBody;
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagerDetailsInfo;
@@ -69,21 +72,27 @@ public class RestEndpointImpl2 implements RestEndpoint {
 
     @Override
     public ClusterOverviewWithVersion overview() throws IOException {
+        CompletableFuture<ClusterOverviewWithVersion> future = client.sendRequest(address, port, ClusterOverviewHeaders.getInstance());
         return null;
     }
 
     @Override
     public boolean shutdownCluster() throws IOException {
+        final CompletableFuture<EmptyResponseBody> future = client.sendRequest(address, port, ShutdownHeaders.getInstance());
         return false;
     }
 
     @Override
     public ClusterDataSetListResponseBody datasets() throws IOException {
+        final CompletableFuture<ClusterDataSetListResponseBody> future = client.sendRequest(address, port, ClusterDataSetListHeaders.INSTANCE);
         return null;
     }
 
     @Override
     public TriggerResponse deleteDataSet(String datasetId) throws IOException {
+        ClusterDataSetDeleteTriggerMessageParameters parameters = new ClusterDataSetDeleteTriggerMessageParameters();
+        parameters.clusterDataSetIdPathParameter.resolveFromString(datasetId);
+        CompletableFuture<TriggerResponse> future = client.sendRequest(address, port, ClusterDataSetDeleteTriggerHeaders.INSTANCE, parameters, EmptyRequestBody.getInstance());
         return null;
     }
 
@@ -224,11 +233,15 @@ public class RestEndpointImpl2 implements RestEndpoint {
 
     @Override
     public TriggerResponse jobSavepoint(String jobId, SavepointTriggerRequestBody requestBody) throws IOException {
+        SavepointTriggerMessageParameters parameters = new SavepointTriggerMessageParameters();
+        parameters.jobID.resolveFromString(jobId);
+        final CompletableFuture<TriggerResponse> future = client.sendRequest(address, port, SavepointTriggerHeaders.getInstance(), parameters, requestBody);
         return null;
     }
 
     @Override
     public AsynchronousOperationResult jobSavepointResult(String jobId, String triggerId) throws IOException {
+
         return null;
     }
 
