@@ -1,9 +1,11 @@
 package cn.sliew.flink.gateway.engine.endpoint.impl;
 
 import cn.sliew.flink.gateway.engine.endpoint.RestEndpoint;
+import cn.sliew.milky.common.exception.Rethrower;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.messages.webmonitor.JobIdsWithStatusOverview;
 import org.apache.flink.runtime.messages.webmonitor.MultipleJobsDetails;
+import org.apache.flink.runtime.rest.FileUpload;
 import org.apache.flink.runtime.rest.RestClient;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationInfo;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationResult;
@@ -24,14 +26,15 @@ import org.apache.flink.runtime.rest.messages.job.savepoints.*;
 import org.apache.flink.runtime.rest.messages.job.savepoints.stop.StopWithSavepointRequestBody;
 import org.apache.flink.runtime.rest.messages.job.savepoints.stop.StopWithSavepointTriggerHeaders;
 import org.apache.flink.runtime.rest.messages.taskmanager.*;
+import org.apache.flink.runtime.rest.util.RestConstants;
 import org.apache.flink.runtime.webmonitor.handlers.*;
 import org.apache.flink.runtime.webmonitor.threadinfo.JobVertexFlameGraph;
 import org.apache.flink.util.ConfigurationException;
 import org.apache.flink.util.concurrent.ExecutorThreadFactory;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,13 +48,13 @@ public class RestEndpointImpl2 implements RestEndpoint {
     private final int port = 8081;
 
     public RestEndpointImpl2(Configuration configuration) {
+        RestClient restClient = null;
         try {
-            this.client = new RestClient(configuration, executorService);
+            restClient = new RestClient(configuration, executorService);
         } catch (ConfigurationException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            Rethrower.throwAs(e);
         }
-
+        this.client = restClient;
     }
 
     @Override
@@ -89,309 +92,273 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public JarListInfo jars() throws IOException {
-        final CompletableFuture<JarListInfo> future = client.sendRequest(address, port, JarListHeaders.getInstance());
-        return null;
+    public CompletableFuture<JarListInfo> jars() throws IOException {
+        return client.sendRequest(address, port, JarListHeaders.getInstance());
     }
 
     @Override
-    public JarUploadResponseBody uploadJar(String filePath) throws IOException {
-
-        return null;
+    public CompletableFuture<JarUploadResponseBody> uploadJar(String filePath) throws IOException {
+        FileUpload upload = new FileUpload(Paths.get(filePath), RestConstants.CONTENT_TYPE_BINARY);
+        return client.sendRequest(address, port, JarUploadHeaders.getInstance(), EmptyMessageParameters.getInstance(), EmptyRequestBody.getInstance(), Collections.singleton(upload));
     }
 
     @Override
-    public boolean deleteJar(String jarId) throws IOException {
+    public CompletableFuture<EmptyResponseBody> deleteJar(String jarId) throws IOException {
         JarDeleteMessageParameters parameters = new JarDeleteMessageParameters();
         parameters.jarIdPathParameter.resolveFromString(jarId);
-        CompletableFuture<EmptyResponseBody> future = client.sendRequest(address, port, JarDeleteHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return false;
+        return client.sendRequest(address, port, JarDeleteHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public JobPlanInfo jarPlan(String jarId, JarPlanRequestBody requestBody) throws IOException {
+    public CompletableFuture<JobPlanInfo> jarPlan(String jarId, JarPlanRequestBody requestBody) throws IOException {
         JarPlanMessageParameters parameters = new JarPlanMessageParameters();
         parameters.jarIdPathParameter.resolveFromString(jarId);
-        CompletableFuture<JobPlanInfo> future = client.sendRequest(address, port, JarPlanGetHeaders.getInstance(), parameters, requestBody);
-        return null;
+        return client.sendRequest(address, port, JarPlanGetHeaders.getInstance(), parameters, requestBody);
     }
 
     @Override
-    public JarRunResponseBody jarRun(String jarId, JarRunRequestBody requestBody) throws IOException {
+    public CompletableFuture<JarRunResponseBody> jarRun(String jarId, JarRunRequestBody requestBody) throws IOException {
         JarRunMessageParameters parameters = new JarRunMessageParameters();
         parameters.jarIdPathParameter.resolveFromString(jarId);
-        CompletableFuture<JarRunResponseBody> future = client.sendRequest(address, port, JarRunHeaders.getInstance(), parameters, requestBody);
-        return null;
+        return client.sendRequest(address, port, JarRunHeaders.getInstance(), parameters, requestBody);
     }
 
     @Override
-    public List<ClusterConfigurationInfoEntry> jobmanagerConfig() throws IOException {
-        CompletableFuture<ClusterConfigurationInfo> future = client.sendRequest(address, port, ClusterConfigurationInfoHeaders.getInstance());
-        return null;
+    public CompletableFuture<ClusterConfigurationInfo> jobmanagerConfig() throws IOException {
+        return client.sendRequest(address, port, ClusterConfigurationInfoHeaders.getInstance());
     }
 
     @Override
-    public LogListInfo jobmanagerLogs() throws IOException {
-        CompletableFuture<LogListInfo> future = client.sendRequest(address, port, JobManagerLogListHeaders.getInstance());
-        return null;
+    public CompletableFuture<LogListInfo> jobmanagerLogs() throws IOException {
+        return client.sendRequest(address, port, JobManagerLogListHeaders.getInstance());
     }
 
     @Override
-    public List<Map> jobmanagerMetrics(String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobmanagerMetrics(String get) throws IOException {
         JobManagerMetricsMessageParameters parameters = new JobManagerMetricsMessageParameters();
         parameters.metricsFilterParameter.resolveFromString(get);
-        CompletableFuture<MetricCollectionResponseBody> future = client.sendRequest(address, port, JobManagerMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobManagerMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public MultipleJobsDetails jobsOverview() throws IOException {
-        CompletableFuture<MultipleJobsDetails> future = client.sendRequest(address, port, JobsOverviewHeaders.getInstance());
-        return null;
+    public CompletableFuture<MultipleJobsDetails> jobsOverview() throws IOException {
+        return client.sendRequest(address, port, JobsOverviewHeaders.getInstance());
     }
 
     @Override
-    public String jobsMetric(String get, String agg, String jobs) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobsMetric(String get, String agg, String jobs) throws IOException {
         JobMetricsMessageParameters parameters = new JobMetricsMessageParameters();
-        parameters.jobPathParameter.resolveFromString(jobs);
         parameters.metricsFilterParameter.resolveFromString(get);
-        CompletableFuture<MetricCollectionResponseBody> future = client.sendRequest(address, port, JobMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        parameters.jobPathParameter.resolveFromString(jobs);
+        return client.sendRequest(address, port, JobMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public JobIdsWithStatusOverview jobs() throws IOException {
-        CompletableFuture<JobIdsWithStatusOverview> future = client.sendRequest(address, port, JobIdsWithStatusesOverviewHeaders.getInstance());
-        return null;
+    public CompletableFuture<JobIdsWithStatusOverview> jobs() throws IOException {
+        return client.sendRequest(address, port, JobIdsWithStatusesOverviewHeaders.getInstance());
     }
 
     @Override
-    public JobDetailsInfo jobDetail(String jobId) throws IOException {
+    public CompletableFuture<JobDetailsInfo> jobDetail(String jobId) throws IOException {
         JobMessageParameters parameters = new JobMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
-        CompletableFuture<JobDetailsInfo> future = client.sendRequest(address, port, JobDetailsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobDetailsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public JobSubmitResponseBody jobSubmit(JobSubmitRequestBody requestBody) throws IOException {
-        final CompletableFuture<JobSubmitResponseBody> future = client.sendRequest(address, port, JobSubmitHeaders.getInstance(), EmptyMessageParameters.getInstance(), requestBody);
-        return null;
+    public CompletableFuture<JobSubmitResponseBody> jobSubmit(JobSubmitRequestBody requestBody) throws IOException {
+        return client.sendRequest(address, port, JobSubmitHeaders.getInstance(), EmptyMessageParameters.getInstance(), requestBody);
     }
 
     @Override
-    public boolean jobTerminate(String jobId, String mode) throws IOException {
+    public CompletableFuture<EmptyResponseBody> jobTerminate(String jobId, String mode) throws IOException {
         JobCancellationMessageParameters parameters = new JobCancellationMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.terminationModeQueryParameter.resolveFromString(mode);
-        CompletableFuture<EmptyResponseBody> future = client.sendRequest(address, port, JobCancellationHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return false;
+        return client.sendRequest(address, port, JobCancellationHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public JobAccumulatorsInfo jobAccumulators(String jobId, Boolean includeSerializedValue) throws IOException {
+    public CompletableFuture<JobAccumulatorsInfo> jobAccumulators(String jobId, Boolean includeSerializedValue) throws IOException {
         JobAccumulatorsMessageParameters parameters = new JobAccumulatorsMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.includeSerializedAccumulatorsParameter.resolveFromString(includeSerializedValue.toString());
-        CompletableFuture<JobAccumulatorsInfo> future = client.sendRequest(address, port, JobAccumulatorsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobAccumulatorsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public CheckpointingStatistics jobCheckpoints(String jobId) throws IOException {
+    public CompletableFuture<CheckpointingStatistics> jobCheckpoints(String jobId) throws IOException {
         JobMessageParameters parameters = new JobMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
-        CompletableFuture<CheckpointingStatistics> future = client.sendRequest(address, port, CheckpointingStatisticsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, CheckpointingStatisticsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public CheckpointConfigInfo jobCheckpointConfig(String jobId) throws IOException {
+    public CompletableFuture<CheckpointConfigInfo> jobCheckpointConfig(String jobId) throws IOException {
         JobMessageParameters parameters = new JobMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
-        CompletableFuture<CheckpointConfigInfo> future = client.sendRequest(address, port, CheckpointConfigHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, CheckpointConfigHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public CheckpointStatistics jobCheckpointDetail(String jobId, Long checkpointId) throws IOException {
+    public CompletableFuture<CheckpointStatistics> jobCheckpointDetail(String jobId, Long checkpointId) throws IOException {
         CheckpointMessageParameters parameters = new CheckpointMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.checkpointIdPathParameter.resolveFromString(checkpointId.toString());
-        CompletableFuture<CheckpointStatistics> future = client.sendRequest(address, port, CheckpointStatisticDetailsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, CheckpointStatisticDetailsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public TaskCheckpointStatisticsWithSubtaskDetails jobCheckpointSubtaskDetail(String jobId, Long checkpointId, String vertexId) throws IOException {
+    public CompletableFuture<TaskCheckpointStatisticsWithSubtaskDetails> jobCheckpointSubtaskDetail(String jobId, Long checkpointId, String vertexId) throws IOException {
         TaskCheckpointMessageParameters parameters = new TaskCheckpointMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.checkpointIdPathParameter.resolveFromString(checkpointId.toString());
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
-        CompletableFuture<TaskCheckpointStatisticsWithSubtaskDetails> future = client.sendRequest(address, port, TaskCheckpointStatisticsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, TaskCheckpointStatisticsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public Map jobConfig(String jobId) throws IOException {
+    public CompletableFuture<JobConfigInfo> jobConfig(String jobId) throws IOException {
         JobMessageParameters parameters = new JobMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
-        CompletableFuture<JobConfigInfo> future = client.sendRequest(address, port, JobConfigHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobConfigHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public JobExceptionsInfoWithHistory jobException(String jobId, String maxExceptions) throws IOException {
+    public CompletableFuture<JobExceptionsInfoWithHistory> jobException(String jobId, String maxExceptions) throws IOException {
         JobExceptionsMessageParameters parameters = new JobExceptionsMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.upperLimitExceptionParameter.resolveFromString(maxExceptions);
-        CompletableFuture<JobExceptionsInfoWithHistory> future = client.sendRequest(address, port, JobExceptionsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobExceptionsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public JobExecutionResultResponseBody jobExecutionResult(String jobId) throws IOException {
+    public CompletableFuture<JobExecutionResultResponseBody> jobExecutionResult(String jobId) throws IOException {
         JobMessageParameters parameters = new JobMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
-        CompletableFuture<JobExecutionResultResponseBody> future = client.sendRequest(address, port, JobExecutionResultHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobExecutionResultHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public List<Map> jobMetrics(String jobId, String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobMetrics(String jobId, String get) throws IOException {
         JobMetricsMessageParameters parameters = new JobMetricsMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.metricsFilterParameter.resolveFromString(get);
-        CompletableFuture<MetricCollectionResponseBody> future = client.sendRequest(address, port, JobMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public JobPlanInfo jobPlan(String jobId) throws IOException {
+    public CompletableFuture<JobPlanInfo> jobPlan(String jobId) throws IOException {
         JobMessageParameters parameters = new JobMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
-        CompletableFuture<JobPlanInfo> future = client.sendRequest(address, port, JobPlanHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobPlanHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public TriggerResponse jobRescale(String jobId, Integer parallelism) throws IOException {
+    public CompletableFuture<TriggerResponse> jobRescale(String jobId, Integer parallelism) throws IOException {
         RescalingTriggerMessageParameters parameters = new RescalingTriggerMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.rescalingParallelismQueryParameter.resolveFromString(parallelism.toString());
-        CompletableFuture<TriggerResponse> future = client.sendRequest(address, port, RescalingTriggerHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, RescalingTriggerHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public AsynchronousOperationResult jobRescaleResult(String jobId, String triggerId) throws IOException {
+    public CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> jobRescaleResult(String jobId, String triggerId) throws IOException {
         RescalingStatusMessageParameters parameters = new RescalingStatusMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.triggerIdPathParameter.resolveFromString(triggerId);
-        CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> future = client.sendRequest(address, port, RescalingStatusHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, RescalingStatusHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public TriggerResponse jobSavepoint(String jobId, SavepointTriggerRequestBody requestBody) throws IOException {
+    public CompletableFuture<TriggerResponse> jobSavepoint(String jobId, SavepointTriggerRequestBody requestBody) throws IOException {
         SavepointTriggerMessageParameters parameters = new SavepointTriggerMessageParameters();
         parameters.jobID.resolveFromString(jobId);
-        final CompletableFuture<TriggerResponse> future = client.sendRequest(address, port, SavepointTriggerHeaders.getInstance(), parameters, requestBody);
-        return null;
+        return client.sendRequest(address, port, SavepointTriggerHeaders.getInstance(), parameters, requestBody);
     }
 
     @Override
-    public AsynchronousOperationResult jobSavepointResult(String jobId, String triggerId) throws IOException {
+    public CompletableFuture<AsynchronousOperationResult<SavepointInfo>> jobSavepointResult(String jobId, String triggerId) throws IOException {
         SavepointStatusMessageParameters parameters = new SavepointStatusMessageParameters();
         parameters.jobIdPathParameter.resolveFromString(jobId);
         parameters.triggerIdPathParameter.resolveFromString(triggerId);
-        CompletableFuture<AsynchronousOperationResult<SavepointInfo>> future = client.sendRequest(address, port, SavepointStatusHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, SavepointStatusHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public TriggerResponse jobStop(String jobId, StopWithSavepointRequestBody requestBody) throws IOException {
+    public CompletableFuture<TriggerResponse> jobStop(String jobId, StopWithSavepointRequestBody requestBody) throws IOException {
         SavepointTriggerMessageParameters parameters = new SavepointTriggerMessageParameters();
         parameters.jobID.resolveFromString(jobId);
-        CompletableFuture<TriggerResponse> future = client.sendRequest(address, port, StopWithSavepointTriggerHeaders.getInstance(), parameters, requestBody);
-        return null;
+        return client.sendRequest(address, port, StopWithSavepointTriggerHeaders.getInstance(), parameters, requestBody);
     }
 
     @Override
-    public JobVertexDetailsInfo jobVertexDetail(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<JobVertexDetailsInfo> jobVertexDetail(String jobId, String vertexId) throws IOException {
         JobVertexMessageParameters parameters = new JobVertexMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
-        CompletableFuture<JobVertexDetailsInfo> future = client.sendRequest(address, port, JobVertexDetailsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobVertexDetailsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public JobVertexAccumulatorsInfo jobVertexAccumulators(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<JobVertexAccumulatorsInfo> jobVertexAccumulators(String jobId, String vertexId) throws IOException {
         JobVertexMessageParameters parameters = new JobVertexMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
-        CompletableFuture<JobVertexAccumulatorsInfo> future = client.sendRequest(address, port, JobVertexAccumulatorsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobVertexAccumulatorsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public JobVertexBackPressureInfo jobVertexBackPressure(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<JobVertexBackPressureInfo> jobVertexBackPressure(String jobId, String vertexId) throws IOException {
         JobVertexMessageParameters parameters = new JobVertexMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
-        CompletableFuture<JobVertexBackPressureInfo> future = client.sendRequest(address, port, JobVertexBackPressureHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobVertexBackPressureHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public JobVertexFlameGraph jobVertexFlameGraph(String jobId, String vertexId, String type) throws IOException {
+    public CompletableFuture<JobVertexFlameGraph> jobVertexFlameGraph(String jobId, String vertexId, String type) throws IOException {
         JobVertexFlameGraphParameters parameters = new JobVertexFlameGraphParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
         parameters.flameGraphTypeQueryParameter.resolveFromString(type);
-        CompletableFuture<JobVertexFlameGraph> future = client.sendRequest(address, port, JobVertexFlameGraphHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobVertexFlameGraphHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public String jobVertexMetrics(String jobId, String vertexId, String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobVertexMetrics(String jobId, String vertexId, String get) throws IOException {
         JobVertexMetricsMessageParameters parameters = new JobVertexMetricsMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
         parameters.metricsFilterParameter.resolveFromString(get);
-        CompletableFuture<MetricCollectionResponseBody> future = client.sendRequest(address, port, JobVertexMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobVertexMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public SubtasksAllAccumulatorsInfo jobVertexSubtaskAccumulators(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<SubtasksAllAccumulatorsInfo> jobVertexSubtaskAccumulators(String jobId, String vertexId) throws IOException {
         JobVertexMessageParameters parameters = new JobVertexMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
-        CompletableFuture<SubtasksAllAccumulatorsInfo> future = client.sendRequest(address, port, SubtasksAllAccumulatorsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, SubtasksAllAccumulatorsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public String jobVertexSubtaskMetrics(String jobId, String vertexId, String get, String agg, String subtasks) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobVertexSubtaskMetrics(String jobId, String vertexId, String get, String agg, String subtasks) throws IOException {
         SubtaskMetricsMessageParameters parameters = new SubtaskMetricsMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
         parameters.metricsFilterParameter.resolveFromString(get);
         parameters.subtaskIndexPathParameter.resolveFromString(subtasks);
-        CompletableFuture<MetricCollectionResponseBody> future = client.sendRequest(address, port, SubtaskMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, SubtaskMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public SubtaskExecutionAttemptDetailsInfo jobVertexSubtaskDetail(String jobId, String vertexId, Integer subtaskindex) throws IOException {
+    public CompletableFuture<SubtaskExecutionAttemptDetailsInfo> jobVertexSubtaskDetail(String jobId, String vertexId, Integer subtaskindex) throws IOException {
         SubtaskMessageParameters parameters = new SubtaskMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
         parameters.subtaskIndexPathParameter.resolveFromString(subtaskindex.toString());
-        CompletableFuture<SubtaskExecutionAttemptDetailsInfo> future = client.sendRequest(address, port, SubtaskCurrentAttemptDetailsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, SubtaskCurrentAttemptDetailsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
@@ -406,113 +373,100 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public SubtaskExecutionAttemptAccumulatorsInfo jobVertexSubtaskAttemptAccumulators(String jobId, String vertexId, Integer subtaskindex, Integer attempt) throws IOException {
+    public CompletableFuture<SubtaskExecutionAttemptAccumulatorsInfo> jobVertexSubtaskAttemptAccumulators(String jobId, String vertexId, Integer subtaskindex, Integer attempt) throws IOException {
         SubtaskAttemptMessageParameters parameters = new SubtaskAttemptMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
         parameters.subtaskIndexPathParameter.resolveFromString(subtaskindex.toString());
         parameters.subtaskAttemptPathParameter.resolveFromString(attempt.toString());
-        CompletableFuture<SubtaskExecutionAttemptAccumulatorsInfo> future = client.sendRequest(address, port, SubtaskExecutionAttemptAccumulatorsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, SubtaskExecutionAttemptAccumulatorsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public String jobVertexSubtaskMetrics(String jobId, String vertexId, Integer subtaskindex, String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobVertexSubtaskMetrics(String jobId, String vertexId, Integer subtaskindex, String get) throws IOException {
         SubtaskMetricsMessageParameters parameters = new SubtaskMetricsMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
         parameters.subtaskIndexPathParameter.resolveFromString(subtaskindex);
         parameters.metricsFilterParameter.resolveFromString(get);
-        CompletableFuture<MetricCollectionResponseBody> future = client.sendRequest(address, port, SubtaskMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, SubtaskMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public SubtasksTimesInfo jobVertexSubtaskTimes(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<SubtasksTimesInfo> jobVertexSubtaskTimes(String jobId, String vertexId) throws IOException {
         JobVertexMessageParameters parameters = new JobVertexMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
-        CompletableFuture<SubtasksTimesInfo> future = client.sendRequest(address, port, SubtasksTimesHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, SubtasksTimesHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public JobVertexTaskManagersInfo jobVertexTaskManagers(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<JobVertexTaskManagersInfo> jobVertexTaskManagers(String jobId, String vertexId) throws IOException {
         JobVertexMessageParameters parameters = new JobVertexMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
-        CompletableFuture<JobVertexTaskManagersInfo> future = client.sendRequest(address, port, JobVertexTaskManagersHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobVertexTaskManagersHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public String jobVertexWatermarks(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobVertexWatermarks(String jobId, String vertexId) throws IOException {
         JobVertexMessageParameters parameters = new JobVertexMessageParameters();
         parameters.jobPathParameter.resolveFromString(jobId);
         parameters.jobVertexIdPathParameter.resolveFromString(vertexId);
-        CompletableFuture<MetricCollectionResponseBody> future = client.sendRequest(address, port, JobVertexWatermarksHeaders.INSTANCE, parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, JobVertexWatermarksHeaders.INSTANCE, parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public TriggerResponse savepointDisposal(SavepointDisposalRequest request) throws IOException {
-        CompletableFuture<TriggerResponse> future = client.sendRequest(address, port, SavepointDisposalTriggerHeaders.getInstance(), EmptyMessageParameters.getInstance(), request);
-        return null;
+    public CompletableFuture<TriggerResponse> savepointDisposal(SavepointDisposalRequest request) throws IOException {
+        return client.sendRequest(address, port, SavepointDisposalTriggerHeaders.getInstance(), EmptyMessageParameters.getInstance(), request);
     }
 
     @Override
-    public AsynchronousOperationResult savepointDisposalResult(String triggerId) throws IOException {
+    public CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> savepointDisposalResult(String triggerId) throws IOException {
         SavepointDisposalStatusMessageParameters parameters = new SavepointDisposalStatusMessageParameters();
         parameters.triggerIdPathParameter.resolveFromString(triggerId);
-        CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> future = client.sendRequest(address, port, SavepointDisposalStatusHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, SavepointDisposalStatusHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public TaskManagersInfo taskManagers() throws IOException {
-        CompletableFuture<TaskManagersInfo> future = client.sendRequest(address, port, TaskManagersHeaders.getInstance());
-        return null;
+    public CompletableFuture<TaskManagersInfo> taskManagers() throws IOException {
+        return client.sendRequest(address, port, TaskManagersHeaders.getInstance());
     }
 
     @Override
-    public List<Map> taskManagersMetrics(String get, String agg, String taskmanagers) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> taskManagersMetrics(String get, String agg, String taskmanagers) throws IOException {
         TaskManagerMetricsMessageParameters parameters = new TaskManagerMetricsMessageParameters();
         parameters.metricsFilterParameter.resolveFromString(get);
         parameters.taskManagerIdParameter.resolveFromString(taskmanagers);
-        CompletableFuture<MetricCollectionResponseBody> future = client.sendRequest(address, port, TaskManagerMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, TaskManagerMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public TaskManagerDetailsInfo taskManagerDetail(String taskManagerId) throws IOException {
+    public CompletableFuture<TaskManagerDetailsInfo> taskManagerDetail(String taskManagerId) throws IOException {
         TaskManagerMessageParameters parameters = new TaskManagerMessageParameters();
         parameters.taskManagerIdParameter.resolveFromString(taskManagerId);
-        CompletableFuture<TaskManagerDetailsInfo> future = client.sendRequest(address, port, TaskManagerDetailsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, TaskManagerDetailsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public LogListInfo taskManagerLogs(String taskManagerId) throws IOException {
+    public CompletableFuture<LogListInfo> taskManagerLogs(String taskManagerId) throws IOException {
         TaskManagerMessageParameters parameters = new TaskManagerMessageParameters();
         parameters.taskManagerIdParameter.resolveFromString(taskManagerId);
-        CompletableFuture<LogListInfo> future = client.sendRequest(address, port, TaskManagerLogsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, TaskManagerLogsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public List<Map> taskManagerMetrics(String taskManagerId, String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> taskManagerMetrics(String taskManagerId, String get) throws IOException {
         TaskManagerMetricsMessageParameters parameters = new TaskManagerMetricsMessageParameters();
         parameters.taskManagerIdParameter.resolveFromString(taskManagerId);
         parameters.metricsFilterParameter.resolveFromString(get);
-        CompletableFuture<MetricCollectionResponseBody> future = client.sendRequest(address, port, TaskManagerMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, TaskManagerMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public ThreadDumpInfo taskManagerThreadDump(String taskManagerId) throws IOException {
+    public CompletableFuture<ThreadDumpInfo> taskManagerThreadDump(String taskManagerId) throws IOException {
         TaskManagerMessageParameters parameters = new TaskManagerMessageParameters();
         parameters.taskManagerIdParameter.resolveFromString(taskManagerId);
-        CompletableFuture<ThreadDumpInfo> future = client.sendRequest(address, port, TaskManagerThreadDumpHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, TaskManagerThreadDumpHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 }

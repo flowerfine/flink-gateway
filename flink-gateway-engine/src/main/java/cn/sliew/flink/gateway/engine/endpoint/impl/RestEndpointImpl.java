@@ -21,7 +21,9 @@ import org.apache.flink.runtime.rest.messages.checkpoints.CheckpointingStatistic
 import org.apache.flink.runtime.rest.messages.checkpoints.TaskCheckpointStatisticsWithSubtaskDetails;
 import org.apache.flink.runtime.rest.messages.dataset.ClusterDataSetListResponseBody;
 import org.apache.flink.runtime.rest.messages.job.*;
+import org.apache.flink.runtime.rest.messages.job.metrics.MetricCollectionResponseBody;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointDisposalRequest;
+import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointInfo;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointTriggerRequestBody;
 import org.apache.flink.runtime.rest.messages.job.savepoints.stop.StopWithSavepointRequestBody;
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagerDetailsInfo;
@@ -37,7 +39,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -66,7 +67,7 @@ public class RestEndpointImpl implements RestEndpoint {
         return map(future, json -> EmptyResponseBody.getInstance());
     }
 
-    private <Out, In> CompletableFuture<Out> remoteCall(Request request, Class<Out> outClass, Class<In>  parameterClasses) throws IOException {
+    private <Out, In> CompletableFuture<Out> remoteCall(Request request, Class<Out> outClass, Class<In> parameterClasses) throws IOException {
         FutureResponse future = new FutureResponse();
         client.newCall(request).enqueue(future);
         return map(future, json -> FlinkShadedJacksonUtil.parseJsonString(json, outClass, parameterClasses));
@@ -149,24 +150,24 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        return remoteCall(request, AsynchronousOperationResult.class, AsynchronousOperationInfo.class);
+        return remoteCall(request, AsynchronousOperationResult.class, AsynchronousOperationInfo.class).thenApply(result -> {
+            AsynchronousOperationResult<AsynchronousOperationInfo> type = result;
+            return type;
+        });
     }
 
     @Override
-    public JarListInfo jars() throws IOException {
+    public CompletableFuture<JarListInfo> jars() throws IOException {
         String url = webInterfaceURL + "/jars";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JarListInfo.class);
-        }
+        return remoteCall(request, JarListInfo.class);
     }
 
     @Override
-    public JarUploadResponseBody uploadJar(String filePath) throws IOException {
+    public CompletableFuture<JarUploadResponseBody> uploadJar(String filePath) throws IOException {
         String url = webInterfaceURL + "/jars/upload";
         File jarFile = new File(filePath);
         MultipartBody body = new MultipartBody.Builder()
@@ -177,79 +178,63 @@ public class RestEndpointImpl implements RestEndpoint {
                 .post(body)
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JarUploadResponseBody.class);
-        }
+        return remoteCall(request, JarUploadResponseBody.class);
     }
 
     @Override
-    public boolean deleteJar(String jarId) throws IOException {
+    public CompletableFuture<EmptyResponseBody> deleteJar(String jarId) throws IOException {
         String url = webInterfaceURL + "/jars/" + jarId;
         Request request = new Request.Builder()
                 .delete()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return response.isSuccessful();
-        }
+        return remoteCall(request);
     }
 
     @Override
-    public JobPlanInfo jarPlan(String jarId, JarPlanRequestBody requestBody) throws IOException {
+    public CompletableFuture<JobPlanInfo> jarPlan(String jarId, JarPlanRequestBody requestBody) throws IOException {
         String url = webInterfaceURL + "/jars/" + jarId + "/plan";
         RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobPlanInfo.class);
-        }
+        return remoteCall(request, JobPlanInfo.class);
     }
 
     @Override
-    public JarRunResponseBody jarRun(String jarId, JarRunRequestBody requestBody) throws IOException {
+    public CompletableFuture<JarRunResponseBody> jarRun(String jarId, JarRunRequestBody requestBody) throws IOException {
         String url = webInterfaceURL + "/jars/" + jarId + "/run";
         RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JarRunResponseBody.class);
-        }
+        return remoteCall(request, JarRunResponseBody.class);
     }
 
     @Override
-    public List<ClusterConfigurationInfoEntry> jobmanagerConfig() throws IOException {
+    public CompletableFuture<ClusterConfigurationInfo> jobmanagerConfig() throws IOException {
         String url = webInterfaceURL + "/jobmanager/config";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonArray(response.body().string(), ClusterConfigurationInfoEntry.class);
-        }
+        return remoteCall(request, ClusterConfigurationInfo.class);
     }
 
     @Override
-    public LogListInfo jobmanagerLogs() throws IOException {
+    public CompletableFuture<LogListInfo> jobmanagerLogs() throws IOException {
         String url = webInterfaceURL + "/jobmanager/logs";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), LogListInfo.class);
-        }
+        return remoteCall(request, LogListInfo.class);
     }
 
     @Override
-    public List<Map> jobmanagerMetrics(String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobmanagerMetrics(String get) throws IOException {
         String url = webInterfaceURL + "/jobmanager/metrics";
         if (StringUtils.isNotBlank(get)) {
             url = url + "?get=" + get;
@@ -258,67 +243,57 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonArray(response.body().string(), Map.class);
-        }
+        return remoteCall(request, MetricCollectionResponseBody.class);
     }
 
     @Override
-    public MultipleJobsDetails jobsOverview() throws IOException {
+    public CompletableFuture<MultipleJobsDetails> jobsOverview() throws IOException {
         String url = webInterfaceURL + "/jobs/overview";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), MultipleJobsDetails.class);
-        }
+        return remoteCall(request, MultipleJobsDetails.class);
     }
 
     @Override
-    public String jobsMetric(String get, String agg, String jobs) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobsMetric(String get, String agg, String jobs) throws IOException {
         return null;
     }
 
     @Override
-    public JobIdsWithStatusOverview jobs() throws IOException {
+    public CompletableFuture<JobIdsWithStatusOverview> jobs() throws IOException {
         String url = webInterfaceURL + "/jobs";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobIdsWithStatusOverview.class);
-        }
+        return remoteCall(request, JobIdsWithStatusOverview.class);
     }
 
     @Override
-    public JobDetailsInfo jobDetail(String jobId) throws IOException {
+    public CompletableFuture<JobDetailsInfo> jobDetail(String jobId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobDetailsInfo.class);
-        }
+        return remoteCall(request, JobDetailsInfo.class);
     }
 
     @Override
-    public JobSubmitResponseBody jobSubmit(JobSubmitRequestBody requestBody) throws IOException {
+    public CompletableFuture<JobSubmitResponseBody> jobSubmit(JobSubmitRequestBody requestBody) throws IOException {
         String url = webInterfaceURL + "/jobs";
         RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobSubmitResponseBody.class);
-        }
+        return remoteCall(request, JobSubmitResponseBody.class);
     }
 
     @Override
-    public boolean jobTerminate(String jobId, String mode) throws IOException {
+    public CompletableFuture<EmptyResponseBody> jobTerminate(String jobId, String mode) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId;
         if (StringUtils.isNotBlank(mode)) {
             url = url + "?mode=" + mode;
@@ -327,13 +302,11 @@ public class RestEndpointImpl implements RestEndpoint {
                 .patch(Util.EMPTY_REQUEST)
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return response.isSuccessful();
-        }
+        return remoteCall(request);
     }
 
     @Override
-    public JobAccumulatorsInfo jobAccumulators(String jobId, Boolean includeSerializedValue) throws IOException {
+    public CompletableFuture<JobAccumulatorsInfo> jobAccumulators(String jobId, Boolean includeSerializedValue) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/accumulators";
         if (includeSerializedValue != null) {
             url = url + "?includeSerializedValue=" + includeSerializedValue;
@@ -342,76 +315,61 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() == false) {
-                throw new RuntimeException(response.code() + "=" + response.message());
-            }
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobAccumulatorsInfo.class);
-        }
+        return remoteCall(request, JobAccumulatorsInfo.class);
     }
 
     @Override
-    public CheckpointingStatistics jobCheckpoints(String jobId) throws IOException {
+    public CompletableFuture<CheckpointingStatistics> jobCheckpoints(String jobId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/checkpoints";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), CheckpointingStatistics.class);
-        }
+        return remoteCall(request, CheckpointingStatistics.class);
     }
 
     @Override
-    public CheckpointConfigInfo jobCheckpointConfig(String jobId) throws IOException {
+    public CompletableFuture<CheckpointConfigInfo> jobCheckpointConfig(String jobId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/checkpoints/config";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), CheckpointConfigInfo.class);
-        }
+        return remoteCall(request, CheckpointConfigInfo.class);
     }
 
     @Override
-    public CheckpointStatistics jobCheckpointDetail(String jobId, Long checkpointId) throws IOException {
+    public CompletableFuture<CheckpointStatistics> jobCheckpointDetail(String jobId, Long checkpointId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/checkpoints/details/" + checkpointId;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), CheckpointStatistics.class);
-        }
+        return remoteCall(request, CheckpointStatistics.class);
     }
 
     @Override
-    public TaskCheckpointStatisticsWithSubtaskDetails jobCheckpointSubtaskDetail(String jobId, Long checkpointId, String vertexId) throws IOException {
+    public CompletableFuture<TaskCheckpointStatisticsWithSubtaskDetails> jobCheckpointSubtaskDetail(String jobId, Long checkpointId, String vertexId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/checkpoints/details/" + checkpointId + "/subtasks/" + vertexId;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TaskCheckpointStatisticsWithSubtaskDetails.class);
-        }
+        return remoteCall(request, TaskCheckpointStatisticsWithSubtaskDetails.class);
     }
 
     @Override
-    public Map jobConfig(String jobId) throws IOException {
+    public CompletableFuture<JobConfigInfo> jobConfig(String jobId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/config";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), Map.class);
-        }
+        return remoteCall(request, JobConfigInfo.class);
     }
 
     @Override
-    public JobExceptionsInfoWithHistory jobException(String jobId, String maxExceptions) throws IOException {
+    public CompletableFuture<JobExceptionsInfoWithHistory> jobException(String jobId, String maxExceptions) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/exceptions";
         if (StringUtils.isNotBlank(maxExceptions)) {
             url = url + "?maxExceptions=" + maxExceptions;
@@ -420,25 +378,21 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobExceptionsInfoWithHistory.class);
-        }
+        return remoteCall(request, JobExceptionsInfoWithHistory.class);
     }
 
     @Override
-    public JobExecutionResultResponseBody jobExecutionResult(String jobId) throws IOException {
+    public CompletableFuture<JobExecutionResultResponseBody> jobExecutionResult(String jobId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/execution-result";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobExecutionResultResponseBody.class);
-        }
+        return remoteCall(request, JobExecutionResultResponseBody.class);
     }
 
     @Override
-    public List<Map> jobMetrics(String jobId, String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobMetrics(String jobId, String get) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/metrics";
         if (StringUtils.isNotBlank(get)) {
             url = url + "?get=" + get;
@@ -447,25 +401,21 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonArray(response.body().string(), Map.class);
-        }
+        return remoteCall(request, MetricCollectionResponseBody.class);
     }
 
     @Override
-    public JobPlanInfo jobPlan(String jobId) throws IOException {
+    public CompletableFuture<JobPlanInfo> jobPlan(String jobId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/plan";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobPlanInfo.class);
-        }
+        return remoteCall(request, JobPlanInfo.class);
     }
 
     @Override
-    public TriggerResponse jobRescale(String jobId, Integer parallelism) throws IOException {
+    public CompletableFuture<TriggerResponse> jobRescale(String jobId, Integer parallelism) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/rescaling";
         Ensures.checkNotNull(parallelism, () -> "parallelism can't be null");
         Ensures.checkArgument(parallelism > 0, () -> "parallelism must be positive integer");
@@ -473,99 +423,89 @@ public class RestEndpointImpl implements RestEndpoint {
                 .patch(Util.EMPTY_REQUEST)
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
-        }
+        return remoteCall(request, TriggerResponse.class);
     }
 
     @Override
-    public AsynchronousOperationResult jobRescaleResult(String jobId, String triggerId) throws IOException {
+    public CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> jobRescaleResult(String jobId, String triggerId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/rescaling/" + triggerId;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
-        }
+        return remoteCall(request, AsynchronousOperationResult.class, AsynchronousOperationInfo.class).thenApply(result -> {
+            AsynchronousOperationResult<AsynchronousOperationInfo> type = result;
+            return type;
+        });
     }
 
     @Override
-    public TriggerResponse jobSavepoint(String jobId, SavepointTriggerRequestBody requestBody) throws IOException {
+    public CompletableFuture<TriggerResponse> jobSavepoint(String jobId, SavepointTriggerRequestBody requestBody) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/savepoints";
         RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
-        }
+        return remoteCall(request, TriggerResponse.class);
     }
 
     @Override
-    public AsynchronousOperationResult jobSavepointResult(String jobId, String triggerId) throws IOException {
+    public CompletableFuture<AsynchronousOperationResult<SavepointInfo>> jobSavepointResult(String jobId, String triggerId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/savepoints/" + triggerId;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
-        }
+        return remoteCall(request, AsynchronousOperationResult.class, SavepointInfo.class).thenApply(result -> {
+            AsynchronousOperationResult<SavepointInfo> type = result;
+            return type;
+        });
     }
 
     @Override
-    public TriggerResponse jobStop(String jobId, StopWithSavepointRequestBody requestBody) throws IOException {
+    public CompletableFuture<TriggerResponse> jobStop(String jobId, StopWithSavepointRequestBody requestBody) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/stop";
         RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
-        }
+        return remoteCall(request, TriggerResponse.class);
     }
 
     @Override
-    public JobVertexDetailsInfo jobVertexDetail(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<JobVertexDetailsInfo> jobVertexDetail(String jobId, String vertexId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobVertexDetailsInfo.class);
-        }
+        return remoteCall(request, JobVertexDetailsInfo.class);
     }
 
     @Override
-    public JobVertexAccumulatorsInfo jobVertexAccumulators(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<JobVertexAccumulatorsInfo> jobVertexAccumulators(String jobId, String vertexId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/accumulators";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobVertexAccumulatorsInfo.class);
-        }
+        return remoteCall(request, JobVertexAccumulatorsInfo.class);
     }
 
     @Override
-    public JobVertexBackPressureInfo jobVertexBackPressure(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<JobVertexBackPressureInfo> jobVertexBackPressure(String jobId, String vertexId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/backpressure";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobVertexBackPressureInfo.class);
-        }
+        return remoteCall(request, JobVertexBackPressureInfo.class);
     }
 
     @Override
-    public JobVertexFlameGraph jobVertexFlameGraph(String jobId, String vertexId, String type) throws IOException {
+    public CompletableFuture<JobVertexFlameGraph> jobVertexFlameGraph(String jobId, String vertexId, String type) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/flamegraph";
         if (StringUtils.isNotBlank(type)) {
             url = url + "?type=" + type;
@@ -574,13 +514,11 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobVertexFlameGraph.class);
-        }
+        return remoteCall(request, JobVertexFlameGraph.class);
     }
 
     @Override
-    public String jobVertexMetrics(String jobId, String vertexId, String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobVertexMetrics(String jobId, String vertexId, String get) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/metrics";
         if (StringUtils.isNotBlank(get)) {
             url = url + "?get=" + get;
@@ -589,25 +527,21 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
-        }
+        return remoteCall(request, MetricCollectionResponseBody.class);
     }
 
     @Override
-    public SubtasksAllAccumulatorsInfo jobVertexSubtaskAccumulators(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<SubtasksAllAccumulatorsInfo> jobVertexSubtaskAccumulators(String jobId, String vertexId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/subtasks/accumulators";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), SubtasksAllAccumulatorsInfo.class);
-        }
+        return remoteCall(request, SubtasksAllAccumulatorsInfo.class);
     }
 
     @Override
-    public String jobVertexSubtaskMetrics(String jobId, String vertexId, String get, String agg, String subtasks) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobVertexSubtaskMetrics(String jobId, String vertexId, String get, String agg, String subtasks) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/subtasks/metrics";
         List<String> queryParams = new LinkedList<>();
         if (StringUtils.isNotBlank(get)) {
@@ -627,21 +561,17 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
-        }
+        return remoteCall(request, MetricCollectionResponseBody.class);
     }
 
     @Override
-    public SubtaskExecutionAttemptDetailsInfo jobVertexSubtaskDetail(String jobId, String vertexId, Integer subtaskindex) throws IOException {
+    public CompletableFuture<SubtaskExecutionAttemptDetailsInfo> jobVertexSubtaskDetail(String jobId, String vertexId, Integer subtaskindex) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/subtasks/" + subtaskindex;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), SubtaskExecutionAttemptDetailsInfo.class);
-        }
+        return remoteCall(request, SubtaskExecutionAttemptDetailsInfo.class);
     }
 
     @Override
@@ -657,19 +587,17 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public SubtaskExecutionAttemptAccumulatorsInfo jobVertexSubtaskAttemptAccumulators(String jobId, String vertexId, Integer subtaskindex, Integer attempt) throws IOException {
+    public CompletableFuture<SubtaskExecutionAttemptAccumulatorsInfo> jobVertexSubtaskAttemptAccumulators(String jobId, String vertexId, Integer subtaskindex, Integer attempt) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/subtasks/" + subtaskindex + "/attempts/" + attempt + "/accumulators";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), SubtaskExecutionAttemptAccumulatorsInfo.class);
-        }
+        return remoteCall(request, SubtaskExecutionAttemptAccumulatorsInfo.class);
     }
 
     @Override
-    public String jobVertexSubtaskMetrics(String jobId, String vertexId, Integer subtaskindex, String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobVertexSubtaskMetrics(String jobId, String vertexId, Integer subtaskindex, String get) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/subtasks/" + subtaskindex + "/metrics";
         if (StringUtils.isNotBlank(get)) {
             url = url + "?get=" + get;
@@ -678,86 +606,75 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
-        }
+        return remoteCall(request, MetricCollectionResponseBody.class);
     }
 
     @Override
-    public SubtasksTimesInfo jobVertexSubtaskTimes(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<SubtasksTimesInfo> jobVertexSubtaskTimes(String jobId, String vertexId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/subtasktimes";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), SubtasksTimesInfo.class);
-        }
+        return remoteCall(request, SubtasksTimesInfo.class);
     }
 
     @Override
-    public JobVertexTaskManagersInfo jobVertexTaskManagers(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<JobVertexTaskManagersInfo> jobVertexTaskManagers(String jobId, String vertexId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/taskmanagers";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), JobVertexTaskManagersInfo.class);
-        }
+        return remoteCall(request, JobVertexTaskManagersInfo.class);
     }
 
     @Override
-    public String jobVertexWatermarks(String jobId, String vertexId) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobVertexWatermarks(String jobId, String vertexId) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/watermarks";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
-        }
+        return remoteCall(request, MetricCollectionResponseBody.class);
     }
 
     @Override
-    public TriggerResponse savepointDisposal(SavepointDisposalRequest requestBody) throws IOException {
+    public CompletableFuture<TriggerResponse> savepointDisposal(SavepointDisposalRequest requestBody) throws IOException {
         String url = webInterfaceURL + "/savepoint-disposal";
         RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
         Request request = new Request.Builder()
                 .post(body)
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
-        }
+        return remoteCall(request, TriggerResponse.class);
     }
 
     @Override
-    public AsynchronousOperationResult savepointDisposalResult(String triggerId) throws IOException {
+    public CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> savepointDisposalResult(String triggerId) throws IOException {
         String url = webInterfaceURL + "/savepoint-disposal/" + triggerId;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
-        }
+        return remoteCall(request, AsynchronousOperationResult.class, AsynchronousOperationInfo.class).thenApply(result -> {
+            AsynchronousOperationResult<AsynchronousOperationInfo> type = result;
+            return type;
+        });
     }
 
     @Override
-    public TaskManagersInfo taskManagers() throws IOException {
+    public CompletableFuture<TaskManagersInfo> taskManagers() throws IOException {
         String url = webInterfaceURL + "/taskmanagers";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TaskManagersInfo.class);
-        }
+        return remoteCall(request, TaskManagersInfo.class);
     }
 
     @Override
-    public List<Map> taskManagersMetrics(String get, String agg, String taskmanagers) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> taskManagersMetrics(String get, String agg, String taskmanagers) throws IOException {
         String url = webInterfaceURL + "/taskmanagers/metrics";
         List<String> queryParams = new LinkedList<>();
         if (StringUtils.isNotBlank(get)) {
@@ -777,37 +694,31 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonArray(response.body().string(), Map.class);
-        }
+        return remoteCall(request, MetricCollectionResponseBody.class);
     }
 
     @Override
-    public TaskManagerDetailsInfo taskManagerDetail(String taskManagerId) throws IOException {
+    public CompletableFuture<TaskManagerDetailsInfo> taskManagerDetail(String taskManagerId) throws IOException {
         String url = webInterfaceURL + "/taskmanagers/" + taskManagerId;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TaskManagerDetailsInfo.class);
-        }
+        return remoteCall(request, TaskManagerDetailsInfo.class);
     }
 
     @Override
-    public LogListInfo taskManagerLogs(String taskManagerId) throws IOException {
+    public CompletableFuture<LogListInfo> taskManagerLogs(String taskManagerId) throws IOException {
         String url = webInterfaceURL + "/taskmanagers/" + taskManagerId + "/logs";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), LogListInfo.class);
-        }
+        return remoteCall(request, LogListInfo.class);
     }
 
     @Override
-    public List<Map> taskManagerMetrics(String taskManagerId, String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> taskManagerMetrics(String taskManagerId, String get) throws IOException {
         String url = webInterfaceURL + "/taskmanagers/" + taskManagerId + "/metrics";
         if (StringUtils.isNotBlank(get)) {
             url = url + "?get=" + get;
@@ -816,21 +727,17 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonArray(response.body().string(), Map.class);
-        }
+        return remoteCall(request, MetricCollectionResponseBody.class);
     }
 
     @Override
-    public ThreadDumpInfo taskManagerThreadDump(String taskManagerId) throws IOException {
+    public CompletableFuture<ThreadDumpInfo> taskManagerThreadDump(String taskManagerId) throws IOException {
         String url = webInterfaceURL + "/taskmanagers/" + taskManagerId + "/thread-dump";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), ThreadDumpInfo.class);
-        }
+        return remoteCall(request, ThreadDumpInfo.class);
     }
 
     private void checkStatus(Response response) throws IOException {
