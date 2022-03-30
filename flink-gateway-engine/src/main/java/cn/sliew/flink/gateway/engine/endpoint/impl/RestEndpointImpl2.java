@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -56,52 +55,37 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public DashboardConfiguration config() throws IOException {
-        CompletableFuture<DashboardConfiguration> future = client.sendRequest(address, port, DashboardConfigurationHeaders.getInstance());
-        try {
-            DashboardConfiguration dashboardConfiguration = future.get();
-
-            return dashboardConfiguration;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public CompletableFuture<DashboardConfiguration> config() throws IOException {
+        return client.sendRequest(address, port, DashboardConfigurationHeaders.getInstance());
     }
 
     @Override
-    public ClusterOverviewWithVersion overview() throws IOException {
-        CompletableFuture<ClusterOverviewWithVersion> future = client.sendRequest(address, port, ClusterOverviewHeaders.getInstance());
-        return null;
+    public CompletableFuture<ClusterOverviewWithVersion> overview() throws IOException {
+        return client.sendRequest(address, port, ClusterOverviewHeaders.getInstance());
     }
 
     @Override
-    public boolean shutdownCluster() throws IOException {
-        final CompletableFuture<EmptyResponseBody> future = client.sendRequest(address, port, ShutdownHeaders.getInstance());
-        return false;
+    public CompletableFuture<EmptyResponseBody> shutdownCluster() throws IOException {
+        return client.sendRequest(address, port, ShutdownHeaders.getInstance());
     }
 
     @Override
-    public ClusterDataSetListResponseBody datasets() throws IOException {
-        final CompletableFuture<ClusterDataSetListResponseBody> future = client.sendRequest(address, port, ClusterDataSetListHeaders.INSTANCE);
-        return null;
+    public CompletableFuture<ClusterDataSetListResponseBody> datasets() throws IOException {
+        return client.sendRequest(address, port, ClusterDataSetListHeaders.INSTANCE);
     }
 
     @Override
-    public TriggerResponse deleteDataSet(String datasetId) throws IOException {
+    public CompletableFuture<TriggerResponse> deleteDataSet(String datasetId) throws IOException {
         ClusterDataSetDeleteTriggerMessageParameters parameters = new ClusterDataSetDeleteTriggerMessageParameters();
         parameters.clusterDataSetIdPathParameter.resolveFromString(datasetId);
-        CompletableFuture<TriggerResponse> future = client.sendRequest(address, port, ClusterDataSetDeleteTriggerHeaders.INSTANCE, parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, ClusterDataSetDeleteTriggerHeaders.INSTANCE, parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
-    public AsynchronousOperationResult deleteDataSetStatus(String triggerId) throws IOException {
+    public CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> deleteDataSetStatus(String triggerId) throws IOException {
         ClusterDataSetDeleteStatusMessageParameters parameters = new ClusterDataSetDeleteStatusMessageParameters();
         parameters.triggerIdPathParameter.resolveFromString(triggerId);
-        CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> future = client.sendRequest(address, port, ClusterDataSetDeleteStatusHeaders.INSTANCE, parameters, EmptyRequestBody.getInstance());
-        return null;
+        return client.sendRequest(address, port, ClusterDataSetDeleteStatusHeaders.INSTANCE, parameters, EmptyRequestBody.getInstance());
     }
 
     @Override

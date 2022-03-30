@@ -2,6 +2,7 @@ package cn.sliew.flink.gateway.engine.endpoint;
 
 import org.apache.flink.runtime.messages.webmonitor.JobIdsWithStatusOverview;
 import org.apache.flink.runtime.messages.webmonitor.MultipleJobsDetails;
+import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationInfo;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationResult;
 import org.apache.flink.runtime.rest.handler.async.TriggerResponse;
 import org.apache.flink.runtime.rest.handler.legacy.messages.ClusterOverviewWithVersion;
@@ -24,39 +25,40 @@ import org.apache.flink.runtime.webmonitor.threadinfo.JobVertexFlameGraph;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public interface RestEndpoint {
 
     /**
      * Returns the configuration of the WebUI.
      */
-    DashboardConfiguration config() throws IOException;
+    CompletableFuture<DashboardConfiguration> config() throws IOException;
 
     /**
      * Returns an overview over the Flink cluster.
      */
-    ClusterOverviewWithVersion overview() throws IOException;
+    CompletableFuture<ClusterOverviewWithVersion> overview() throws IOException;
 
     /**
      * Shuts down the cluster
      */
-    boolean shutdownCluster() throws IOException;
+    CompletableFuture<EmptyResponseBody> shutdownCluster() throws IOException;
 
     /**
      * Returns all cluster data sets.
      */
-    ClusterDataSetListResponseBody datasets() throws IOException;
+    CompletableFuture<ClusterDataSetListResponseBody> datasets() throws IOException;
 
     /**
      * Triggers the deletion of a cluster data set.
      * This async operation would return a 'triggerid' for further query identifier.
      */
-    TriggerResponse deleteDataSet(String datasetId) throws IOException;
+    CompletableFuture<TriggerResponse> deleteDataSet(String datasetId) throws IOException;
 
     /**
      * Returns the status for the delete operation of a cluster data set.
      */
-    AsynchronousOperationResult deleteDataSetStatus(String triggerId) throws IOException;
+    CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> deleteDataSetStatus(String triggerId) throws IOException;
 
     /**
      * Returns a list of all jars previously uploaded via '/jars/upload'.

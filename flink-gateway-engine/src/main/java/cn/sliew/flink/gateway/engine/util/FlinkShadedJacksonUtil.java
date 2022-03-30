@@ -5,6 +5,7 @@ import cn.sliew.milky.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.runtime.rest.util.RestMapperUtils;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.JavaType;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.type.CollectionType;
 
@@ -41,6 +42,17 @@ public enum FlinkShadedJacksonUtil {
         } catch (JsonProcessingException var3) {
             log.error("json 反序列化失败 clazz: {}, json: {}", new Object[]{clazz.getName(), json, var3});
             Rethrower.throwAs(var3);
+            return null;
+        }
+    }
+
+    public static <T> T parseJsonString(String json, Class<T> outerType, Class parameterClasses) {
+        try {
+            JavaType type = OBJECT_MAPPER.getTypeFactory().constructParametricType(outerType, parameterClasses);
+            return OBJECT_MAPPER.readValue(json, type);
+        } catch (JsonProcessingException e) {
+            log.error("json 反序列化失败 clazz: {}, json: {}", outerType.getTypeName(), json, e);
+            Rethrower.throwAs(e);
             return null;
         }
     }

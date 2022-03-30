@@ -3,12 +3,14 @@ package cn.sliew.flink.gateway.engine.endpoint.impl;
 import cn.sliew.flink.gateway.engine.endpoint.RestEndpoint;
 import cn.sliew.flink.gateway.engine.util.FlinkShadedJacksonUtil;
 import cn.sliew.milky.common.check.Ensures;
+import cn.sliew.milky.common.exception.Rethrower;
 import cn.sliew.milky.common.util.StringUtils;
 import okhttp3.RequestBody;
 import okhttp3.*;
 import okhttp3.internal.Util;
 import org.apache.flink.runtime.messages.webmonitor.JobIdsWithStatusOverview;
 import org.apache.flink.runtime.messages.webmonitor.MultipleJobsDetails;
+import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationInfo;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationResult;
 import org.apache.flink.runtime.rest.handler.async.TriggerResponse;
 import org.apache.flink.runtime.rest.handler.legacy.messages.ClusterOverviewWithVersion;
@@ -36,6 +38,8 @@ import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class RestEndpointImpl implements RestEndpoint {
@@ -56,82 +60,96 @@ public class RestEndpointImpl implements RestEndpoint {
         this.webInterfaceURL = webInterfaceURL + "/" + RestAPIVersion.V1.getURLVersionPrefix();
     }
 
+    private CompletableFuture<EmptyResponseBody> remoteCall(Request request) throws IOException {
+        FutureResponse future = new FutureResponse();
+        client.newCall(request).enqueue(future);
+        return map(future, json -> EmptyResponseBody.getInstance());
+    }
+
+    private <Out, In> CompletableFuture<Out> remoteCall(Request request, Class<Out> outClass, Class<In>  parameterClasses) throws IOException {
+        FutureResponse future = new FutureResponse();
+        client.newCall(request).enqueue(future);
+        return map(future, json -> FlinkShadedJacksonUtil.parseJsonString(json, outClass, parameterClasses));
+    }
+
+    private <T> CompletableFuture<T> remoteCall(Request request, Class<T> responseClass) throws IOException {
+        FutureResponse future = new FutureResponse();
+        client.newCall(request).enqueue(future);
+        return map(future, json -> FlinkShadedJacksonUtil.parseJsonString(json, responseClass));
+    }
+
+    private <T> CompletableFuture<T> map(FutureResponse future, Function<String, T> parser) {
+        return future.future.thenApply(response -> {
+            try {
+                checkStatus(response);
+                return parser.apply(response.body().string());
+            } catch (IOException e) {
+                Rethrower.throwAs(e);
+                return null;
+            } finally {
+                response.close();
+            }
+        });
+    }
+
     @Override
-    public DashboardConfiguration config() throws IOException {
+    public CompletableFuture<DashboardConfiguration> config() throws IOException {
         String url = webInterfaceURL + ClusterConfigurationInfoHeaders.CLUSTER_CONFIG_REST_PATH;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), DashboardConfiguration.class);
-        }
+        return remoteCall(request, DashboardConfiguration.class);
     }
 
     @Override
-    public ClusterOverviewWithVersion overview() throws IOException {
+    public CompletableFuture<ClusterOverviewWithVersion> overview() throws IOException {
         String url = webInterfaceURL + ClusterOverviewHeaders.URL;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), ClusterOverviewWithVersion.class);
-        }
+        return remoteCall(request, ClusterOverviewWithVersion.class);
     }
 
     @Override
-    public boolean shutdownCluster() throws IOException {
+    public CompletableFuture<EmptyResponseBody> shutdownCluster() throws IOException {
         String url = webInterfaceURL + "/cluster";
         Request request = new Request.Builder()
                 .delete()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return response.isSuccessful();
-        }
+        return remoteCall(request);
     }
 
     @Override
-    public ClusterDataSetListResponseBody datasets() throws IOException {
+    public CompletableFuture<ClusterDataSetListResponseBody> datasets() throws IOException {
         String url = webInterfaceURL + "/datasets";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), ClusterDataSetListResponseBody.class);
-        }
+        return remoteCall(request, ClusterDataSetListResponseBody.class);
     }
 
     @Override
-    public TriggerResponse deleteDataSet(String datasetId) throws IOException {
+    public CompletableFuture<TriggerResponse> deleteDataSet(String datasetId) throws IOException {
         String url = webInterfaceURL + "/datasets/" + datasetId;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), TriggerResponse.class);
-        }
+        return remoteCall(request, TriggerResponse.class);
     }
 
     @Override
-    public AsynchronousOperationResult deleteDataSetStatus(String triggerId) throws IOException {
+    public CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> deleteDataSetStatus(String triggerId) throws IOException {
         String url = webInterfaceURL + "/datasets/delete/" + triggerId;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            checkStatus(response);
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), AsynchronousOperationResult.class);
-        }
+        return remoteCall(request, AsynchronousOperationResult.class, AsynchronousOperationInfo.class);
     }
 
     @Override
