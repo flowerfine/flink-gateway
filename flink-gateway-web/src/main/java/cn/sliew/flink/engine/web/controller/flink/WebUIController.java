@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/flink/web-ui")
@@ -20,7 +21,7 @@ public class WebUIController {
     private RestEndpoint endpoint = new RestEndpointImpl2(GlobalConfiguration.loadConfiguration());
 
     @GetMapping("config")
-    public DashboardConfiguration config() throws IOException {
+    public CompletableFuture<DashboardConfiguration> config() throws IOException {
         return endpoint.config();
     }
 }
