@@ -37,8 +37,9 @@ public class TaskManagerController {
     }
 
     @GetMapping("{taskManagerId}/metrics")
-    public CompletableFuture<MetricCollectionResponseBody> taskManagerMetrics(@PathVariable("taskManagerId") String taskManagerId) throws IOException {
-        return endpoint.taskManagerMetrics(taskManagerId, null);
+    public CompletableFuture<MetricCollectionResponseBody> taskManagerMetrics(@PathVariable("taskManagerId") String taskManagerId,
+                                                                              @RequestParam(value = "get", required = false) Optional<String> get) throws IOException {
+        return endpoint.taskManagerMetrics(taskManagerId, get);
     }
 
     @GetMapping("{taskManagerId}/logs")

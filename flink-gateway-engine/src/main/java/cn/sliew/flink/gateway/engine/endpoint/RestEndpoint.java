@@ -465,7 +465,7 @@ public interface RestEndpoint {
      * @param taskManagerId 32-character hexadecimal string that identifies a task manager.
      * @param get(optional) Comma-separated list of string values to select specific metrics.
      */
-    CompletableFuture<MetricCollectionResponseBody> taskManagerMetrics(String taskManagerId, String get) throws IOException;
+    CompletableFuture<MetricCollectionResponseBody> taskManagerMetrics(String taskManagerId, Optional<String> get) throws IOException;
 
     /**
      * Returns the thread dump of the requested TaskManager.

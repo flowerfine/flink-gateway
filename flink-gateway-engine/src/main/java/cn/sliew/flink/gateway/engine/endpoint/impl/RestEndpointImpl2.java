@@ -458,10 +458,10 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> taskManagerMetrics(String taskManagerId, String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> taskManagerMetrics(String taskManagerId, Optional<String> get) throws IOException {
         TaskManagerMetricsMessageParameters parameters = new TaskManagerMetricsMessageParameters();
         toIllegalArgument(() -> parameters.taskManagerIdParameter.resolveFromString(taskManagerId));
-        toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(get));
+        get.ifPresent(metrics -> toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(metrics)));
         return client.sendRequest(address, port, TaskManagerMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
