@@ -149,10 +149,10 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> jobsMetric(String get, String agg, String jobs) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobsMetric(Optional<String> get, Optional<String> agg, Optional<String> jobs) throws IOException {
         JobMetricsMessageParameters parameters = new JobMetricsMessageParameters();
-        toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(get));
-        toIllegalArgument(() -> parameters.jobPathParameter.resolveFromString(jobs));
+        get.ifPresent(metrics -> toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(metrics)));
+        jobs.ifPresent(job -> toIllegalArgument(() -> parameters.jobPathParameter.resolveFromString(job)));
         return client.sendRequest(address, port, JobMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
@@ -436,10 +436,10 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> taskManagersMetrics(String get, String agg, String taskmanagers) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> taskManagersMetrics(Optional<String> get, Optional<String> agg, Optional<String> taskmanagers) throws IOException {
         TaskManagerMetricsMessageParameters parameters = new TaskManagerMetricsMessageParameters();
-        toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(get));
-        toIllegalArgument(() -> parameters.taskManagerIdParameter.resolveFromString(taskmanagers));
+        get.ifPresent(metrics -> toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(metrics)));
+        taskmanagers.ifPresent(taskmanager -> toIllegalArgument(() -> parameters.taskManagerIdParameter.resolveFromString(taskmanager)));
         return client.sendRequest(address, port, TaskManagerMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 

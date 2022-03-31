@@ -259,8 +259,27 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> jobsMetric(String get, String agg, String jobs) throws IOException {
-        return null;
+    public CompletableFuture<MetricCollectionResponseBody> jobsMetric(Optional<String> get, Optional<String> agg, Optional<String> jobs) throws IOException {
+        String url = webInterfaceURL + "/jobs/metrics";
+        List<String> queryParams = new LinkedList<>();
+        if (get.isPresent()) {
+            queryParams.add("get=" + get.get());
+        }
+        if (agg.isPresent()) {
+            queryParams.add("agg=" + agg.get());
+        }
+        if (jobs.isPresent()) {
+            queryParams.add("jobs=" + jobs.get());
+        }
+        if (queryParams.isEmpty() == false) {
+            String params = queryParams.stream().collect(Collectors.joining("&"));
+            url = url + "?" + params;
+        }
+        Request request = new Request.Builder()
+                .get()
+                .url(url)
+                .build();
+        return remoteCall(request, MetricCollectionResponseBody.class);
     }
 
     @Override
@@ -674,17 +693,17 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> taskManagersMetrics(String get, String agg, String taskmanagers) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> taskManagersMetrics(Optional<String> get, Optional<String> agg, Optional<String> taskmanagers) throws IOException {
         String url = webInterfaceURL + "/taskmanagers/metrics";
         List<String> queryParams = new LinkedList<>();
-        if (StringUtils.isNotBlank(get)) {
-            queryParams.add("get=" + get);
+        if (get.isPresent()) {
+            queryParams.add("get=" + get.get());
         }
-        if (StringUtils.isNotBlank(agg)) {
-            queryParams.add("agg=" + agg);
+        if (agg.isPresent()) {
+            queryParams.add("agg=" + agg.get());
         }
-        if (StringUtils.isNotBlank(taskmanagers)) {
-            queryParams.add("taskmanagers=" + taskmanagers);
+        if (taskmanagers.isPresent()) {
+            queryParams.add("taskmanagers=" + taskmanagers.get());
         }
         if (queryParams.isEmpty() == false) {
             String params = queryParams.stream().collect(Collectors.joining("&"));

@@ -46,6 +46,13 @@ public class JobController {
         return endpoint.jobs();
     }
 
+    @GetMapping("/metrics")
+    public CompletableFuture<MetricCollectionResponseBody> jobsMetrics(@RequestParam(value = "get", required = false) Optional<String> get,
+                                                                       @RequestParam(value = "agg", required = false) Optional<String> agg,
+                                                                       @RequestParam(value = "jobs", required = false) Optional<String> jobs) throws IOException {
+        return endpoint.jobsMetric(get, agg, jobs);
+    }
+
     @GetMapping("{jobId}")
     public CompletableFuture<JobDetailsInfo> job(@PathVariable("jobId") String jobId) throws IOException {
         return endpoint.jobDetail(jobId);

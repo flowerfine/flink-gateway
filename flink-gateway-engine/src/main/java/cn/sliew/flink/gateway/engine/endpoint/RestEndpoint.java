@@ -132,7 +132,7 @@ public interface RestEndpoint {
      * @param agg(optional)  Comma-separated list of aggregation modes which should be calculated. Available aggregations are: "min, max, sum, avg".
      * @param jobs(optional) Comma-separated list of 32-character hexadecimal strings to select specific jobs.
      */
-    CompletableFuture<MetricCollectionResponseBody> jobsMetric(String get, String agg, String jobs) throws IOException;
+    CompletableFuture<MetricCollectionResponseBody> jobsMetric(Optional<String> get, Optional<String> agg, Optional<String> jobs) throws IOException;
 
     /**
      * Returns an overview over all jobs and their current state.
@@ -441,7 +441,7 @@ public interface RestEndpoint {
      * @param agg(optional)          Comma-separated list of aggregation modes which should be calculated. Available aggregations are: "min, max, sum, avg".
      * @param taskmanagers(optional) Comma-separated list of 32-character hexadecimal strings to select specific task managers.
      */
-    CompletableFuture<MetricCollectionResponseBody> taskManagersMetrics(String get, String agg, String taskmanagers) throws IOException;
+    CompletableFuture<MetricCollectionResponseBody> taskManagersMetrics(Optional<String> get, Optional<String> agg, Optional<String> taskmanagers) throws IOException;
 
     /**
      * Returns details for a task manager.

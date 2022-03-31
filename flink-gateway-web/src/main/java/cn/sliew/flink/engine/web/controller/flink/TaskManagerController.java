@@ -7,12 +7,10 @@ import org.apache.flink.runtime.rest.messages.job.metrics.MetricCollectionRespon
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagerDetailsInfo;
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagersInfo;
 import org.apache.flink.runtime.rest.messages.taskmanager.ThreadDumpInfo;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -26,12 +24,11 @@ public class TaskManagerController {
         return endpoint.taskManagers();
     }
 
-    /**
-     * todo 拆开 get, agg, taskmanagers
-     */
     @GetMapping("metrics")
-    public CompletableFuture<MetricCollectionResponseBody> taskMangersMetrics() throws IOException {
-        return endpoint.taskManagersMetrics(null, null, null);
+    public CompletableFuture<MetricCollectionResponseBody> taskMangersMetrics(@RequestParam(value = "get", required = false) Optional<String> get,
+                                                                              @RequestParam(value = "agg", required = false) Optional<String> agg,
+                                                                              @RequestParam(value = "taskmanagers", required = false) Optional<String> taskmanagers) throws IOException {
+        return endpoint.taskManagersMetrics(get, agg, taskmanagers);
     }
 
     @GetMapping("{taskManagerId}")
@@ -39,9 +36,6 @@ public class TaskManagerController {
         return endpoint.taskManagerDetail(taskManagerId);
     }
 
-    /**
-     * todo 拆开 get
-     */
     @GetMapping("{taskManagerId}/metrics")
     public CompletableFuture<MetricCollectionResponseBody> taskManagerMetrics(@PathVariable("taskManagerId") String taskManagerId) throws IOException {
         return endpoint.taskManagerMetrics(taskManagerId, null);
