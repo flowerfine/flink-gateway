@@ -11,12 +11,12 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@RequestMapping("/flink/jar")
+@RequestMapping("/flink/jars")
 public class JarController {
 
     private RestEndpoint endpoint = new RestEndpointImpl("http://localhost:8081");
 
-    @GetMapping("jars")
+    @GetMapping("/")
     public CompletableFuture<JarListInfo> jars() throws IOException {
         return endpoint.jars();
     }

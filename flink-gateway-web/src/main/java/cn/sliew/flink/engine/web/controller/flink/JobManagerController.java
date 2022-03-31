@@ -2,6 +2,8 @@ package cn.sliew.flink.engine.web.controller.flink;
 
 import cn.sliew.flink.gateway.engine.endpoint.RestEndpoint;
 import cn.sliew.flink.gateway.engine.endpoint.impl.RestEndpointImpl;
+import cn.sliew.flink.gateway.engine.endpoint.impl.RestEndpointImpl2;
+import org.apache.flink.configuration.GlobalConfiguration;
 import org.apache.flink.runtime.rest.messages.ClusterConfigurationInfo;
 import org.apache.flink.runtime.rest.messages.LogListInfo;
 import org.apache.flink.runtime.rest.messages.job.metrics.MetricCollectionResponseBody;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -18,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 public class JobManagerController {
 
     private RestEndpoint endpoint = new RestEndpointImpl("http://localhost:8081");
+//    private RestEndpoint endpoint = new RestEndpointImpl2(GlobalConfiguration.loadConfiguration());
 
     @GetMapping("config")
     public CompletableFuture<ClusterConfigurationInfo> config() throws IOException {
@@ -29,11 +33,8 @@ public class JobManagerController {
         return endpoint.jobmanagerLogs();
     }
 
-    /**
-     * todo 换成 2 接口
-     */
     @GetMapping("metrics")
-    public CompletableFuture<MetricCollectionResponseBody> metrics(@RequestParam(value = "get", required = false) String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> metrics(@RequestParam(value = "get", required = false) Optional<String> get) throws IOException {
         return endpoint.jobmanagerMetrics(get);
     }
 }

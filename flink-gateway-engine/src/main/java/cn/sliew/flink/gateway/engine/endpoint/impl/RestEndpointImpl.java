@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -54,6 +55,7 @@ public class RestEndpointImpl implements RestEndpoint {
             .callTimeout(Duration.ofSeconds(3L))
             .addInterceptor(new LogInterceptor())
             .build();
+
 
     private final String webInterfaceURL;
 
@@ -95,7 +97,7 @@ public class RestEndpointImpl implements RestEndpoint {
 
     @Override
     public CompletableFuture<DashboardConfiguration> config() throws IOException {
-        String url = webInterfaceURL + ClusterConfigurationInfoHeaders.CLUSTER_CONFIG_REST_PATH;
+        String url = webInterfaceURL + "/config";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
@@ -105,7 +107,7 @@ public class RestEndpointImpl implements RestEndpoint {
 
     @Override
     public CompletableFuture<ClusterOverviewWithVersion> overview() throws IOException {
-        String url = webInterfaceURL + ClusterOverviewHeaders.URL;
+        String url = webInterfaceURL + "/overview";
         Request request = new Request.Builder()
                 .get()
                 .url(url)
@@ -234,10 +236,10 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> jobmanagerMetrics(String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobmanagerMetrics(Optional<String> get) throws IOException {
         String url = webInterfaceURL + "/jobmanager/metrics";
-        if (StringUtils.isNotBlank(get)) {
-            url = url + "?get=" + get;
+        if (get.isPresent()) {
+            url = url + "?get=" + get.get();
         }
         Request request = new Request.Builder()
                 .get()

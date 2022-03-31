@@ -25,8 +25,7 @@ import org.apache.flink.runtime.webmonitor.handlers.*;
 import org.apache.flink.runtime.webmonitor.threadinfo.JobVertexFlameGraph;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface RestEndpoint {
@@ -54,11 +53,15 @@ public interface RestEndpoint {
     /**
      * Triggers the deletion of a cluster data set.
      * This async operation would return a 'triggerid' for further query identifier.
+     *
+     * @param datasetId - 32-character hexadecimal string value that identifies a cluster data set.
      */
     CompletableFuture<TriggerResponse> deleteDataSet(String datasetId) throws IOException;
 
     /**
      * Returns the status for the delete operation of a cluster data set.
+     *
+     * @param triggerId - 32-character hexadecimal string that identifies an asynchronous operation trigger ID. The ID was returned then the operation was triggered.
      */
     CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> deleteDataSetStatus(String triggerId) throws IOException;
 
@@ -112,8 +115,10 @@ public interface RestEndpoint {
 
     /**
      * Provides access to job manager metrics.
+     *
+     * @param get(optional) Comma-separated list of string values to select specific metrics.
      */
-    CompletableFuture<MetricCollectionResponseBody> jobmanagerMetrics(String get) throws IOException;
+    CompletableFuture<MetricCollectionResponseBody> jobmanagerMetrics(Optional<String> get) throws IOException;
 
     /**
      * Returns an overview over all jobs.
@@ -216,7 +221,7 @@ public interface RestEndpoint {
      * @param jobId                   32-character hexadecimal string value that identifies a job.
      * @param maxExceptions(optional) Comma-separated list of integer values that specifies the upper limit of exceptions to return.
      */
-    CompletableFuture<JobExceptionsInfoWithHistory>  jobException(String jobId, String maxExceptions) throws IOException;
+    CompletableFuture<JobExceptionsInfoWithHistory> jobException(String jobId, String maxExceptions) throws IOException;
 
     /**
      * Returns the result of a job execution.

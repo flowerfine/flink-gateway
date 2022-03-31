@@ -35,6 +35,7 @@ import org.apache.flink.util.concurrent.ExecutorThreadFactory;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -136,9 +137,9 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> jobmanagerMetrics(String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobmanagerMetrics(Optional<String> get) throws IOException {
         JobManagerMetricsMessageParameters parameters = new JobManagerMetricsMessageParameters();
-        toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(get));
+        get.ifPresent(metrics -> toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(metrics)));
         return client.sendRequest(address, port, JobManagerMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
