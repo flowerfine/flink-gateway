@@ -243,10 +243,10 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> jobMetrics(String jobId, String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobMetrics(String jobId, Optional<String> get) throws IOException {
         JobMetricsMessageParameters parameters = new JobMetricsMessageParameters();
         toIllegalArgument(() -> parameters.jobPathParameter.resolveFromString(jobId));
-        toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(get));
+        get.ifPresent(metrics -> toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(metrics)));
         return client.sendRequest(address, port, JobMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 

@@ -394,10 +394,10 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> jobMetrics(String jobId, String get) throws IOException {
+    public CompletableFuture<MetricCollectionResponseBody> jobMetrics(String jobId, Optional<String> get) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/metrics";
-        if (StringUtils.isNotBlank(get)) {
-            url = url + "?get=" + get;
+        if (get.isPresent()) {
+            url = url + "?get=" + get.get();
         }
         Request request = new Request.Builder()
                 .get()

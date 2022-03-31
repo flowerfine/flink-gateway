@@ -237,7 +237,7 @@ public interface RestEndpoint {
      * @param jobId         32-character hexadecimal string value that identifies a job.
      * @param get(optional) Comma-separated list of string values to select specific metrics.
      */
-    CompletableFuture<MetricCollectionResponseBody> jobMetrics(String jobId, String get) throws IOException;
+    CompletableFuture<MetricCollectionResponseBody> jobMetrics(String jobId, Optional<String> get) throws IOException;
 
     /**
      * Returns the dataflow plan of a job.

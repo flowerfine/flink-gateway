@@ -2,6 +2,8 @@ package cn.sliew.flink.engine.web.controller.flink;
 
 import cn.sliew.flink.gateway.engine.endpoint.RestEndpoint;
 import cn.sliew.flink.gateway.engine.endpoint.impl.RestEndpointImpl;
+import cn.sliew.flink.gateway.engine.endpoint.impl.RestEndpointImpl2;
+import org.apache.flink.configuration.GlobalConfiguration;
 import org.apache.flink.runtime.messages.webmonitor.JobIdsWithStatusOverview;
 import org.apache.flink.runtime.messages.webmonitor.MultipleJobsDetails;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationInfo;
@@ -24,13 +26,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/flink/jobs")
 public class JobController {
 
-    private RestEndpoint endpoint = new RestEndpointImpl("http://localhost:8081");
+//    private RestEndpoint endpoint = new RestEndpointImpl("http://localhost:8081");
+    private RestEndpoint endpoint = new RestEndpointImpl2(GlobalConfiguration.loadConfiguration());
 
     @GetMapping("overview")
     public CompletableFuture<MultipleJobsDetails> jobsOverview() throws IOException {
@@ -53,8 +57,9 @@ public class JobController {
     }
 
     @GetMapping("{jobId}/metrics")
-    public CompletableFuture<MetricCollectionResponseBody> jobMetrics(@PathVariable("jobId") String jobId) throws IOException {
-        return endpoint.jobMetrics(jobId, null);
+    public CompletableFuture<MetricCollectionResponseBody> jobMetrics(@PathVariable("jobId") String jobId,
+                                                                      @RequestParam(value = "get", required = false) Optional<String> get) throws IOException {
+        return endpoint.jobMetrics(jobId, get);
     }
 
     @GetMapping("{jobId}/exceptions")
