@@ -575,15 +575,13 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public SubtaskExecutionAttemptDetailsInfo jobVertexSubtaskAttemptDetail(String jobId, String vertexId, Integer subtaskindex, Integer attempt) throws IOException {
+    public CompletableFuture<SubtaskExecutionAttemptDetailsInfo> jobVertexSubtaskAttemptDetail(String jobId, String vertexId, Integer subtaskindex, Integer attempt) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/vertices/" + vertexId + "/subtasks/" + subtaskindex + "/attempts/" + attempt;
         Request request = new Request.Builder()
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return FlinkShadedJacksonUtil.parseJsonString(response.body().string(), SubtaskExecutionAttemptDetailsInfo.class);
-        }
+        return remoteCall(request, SubtaskExecutionAttemptDetailsInfo.class);
     }
 
     @Override

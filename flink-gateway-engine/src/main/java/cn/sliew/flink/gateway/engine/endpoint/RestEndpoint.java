@@ -363,7 +363,7 @@ public interface RestEndpoint {
      * @param subtaskindex Positive integer value that identifies a subtask.
      * @param attempt      Positive integer value that identifies an execution attempt.
      */
-    SubtaskExecutionAttemptDetailsInfo jobVertexSubtaskAttemptDetail(String jobId, String vertexId, Integer subtaskindex, Integer attempt) throws IOException;
+    CompletableFuture<SubtaskExecutionAttemptDetailsInfo> jobVertexSubtaskAttemptDetail(String jobId, String vertexId, Integer subtaskindex, Integer attempt) throws IOException;
 
     /**
      * Returns the accumulators of an execution attempt of a subtask.

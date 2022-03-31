@@ -30,7 +30,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
         <spring-cloud.version>2022.0.0-M1</spring-cloud.version>
-        <milky.version>1.0.5-SNAPSHOT</milky.version>
+        <milky.version>1.0.5</milky.version>
         <flink.version>1.14.0</flink.version>
         <docker.java.version>3.2.13</docker.java.version>
         <httpclient5.fluent.version>5.1.3</httpclient5.fluent.version>
