@@ -54,11 +54,6 @@ public class PackageJarJob {
     private boolean detachedMode;
 
     /**
-     * If the job is submitted in attached mode, perform a best-effort cluster shutdown when the CLI is terminated abruptly, e.g., in response to a user interrupt, such as typing Ctrl + C.
-     */
-    private boolean shutdownOnAttachedExit;
-
-    /**
      * @see CliFrontendParser#SAVEPOINT_PATH_OPTION
      * @see CliFrontendParser#SAVEPOINT_ALLOW_NON_RESTORED_OPTION
      * @see CliFrontendParser#SAVEPOINT_RESTORE_MODE
