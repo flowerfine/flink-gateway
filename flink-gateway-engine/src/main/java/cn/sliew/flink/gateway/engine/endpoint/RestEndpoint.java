@@ -13,6 +13,7 @@ import org.apache.flink.runtime.rest.messages.checkpoints.CheckpointingStatistic
 import org.apache.flink.runtime.rest.messages.checkpoints.TaskCheckpointStatisticsWithSubtaskDetails;
 import org.apache.flink.runtime.rest.messages.dataset.ClusterDataSetListResponseBody;
 import org.apache.flink.runtime.rest.messages.job.*;
+import org.apache.flink.runtime.rest.messages.job.metrics.AggregatedMetricsResponseBody;
 import org.apache.flink.runtime.rest.messages.job.metrics.MetricCollectionResponseBody;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointDisposalRequest;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointInfo;
@@ -132,7 +133,7 @@ public interface RestEndpoint {
      * @param agg(optional)  Comma-separated list of aggregation modes which should be calculated. Available aggregations are: "min, max, sum, avg".
      * @param jobs(optional) Comma-separated list of 32-character hexadecimal strings to select specific jobs.
      */
-    CompletableFuture<MetricCollectionResponseBody> jobsMetric(Optional<String> get, Optional<String> agg, Optional<String> jobs) throws IOException;
+    CompletableFuture<AggregatedMetricsResponseBody> jobsMetric(Optional<String> get, Optional<String> agg, Optional<String> jobs) throws IOException;
 
     /**
      * Returns an overview over all jobs and their current state.
@@ -170,7 +171,7 @@ public interface RestEndpoint {
      * @param jobId                            32-character hexadecimal string value that identifies a job.
      * @param includeSerializedValue(optional) Boolean value that specifies whether serialized user task accumulators should be included in the response.
      */
-    CompletableFuture<JobAccumulatorsInfo> jobAccumulators(String jobId, Boolean includeSerializedValue) throws IOException;
+    CompletableFuture<JobAccumulatorsInfo> jobAccumulators(String jobId, Optional<Boolean> includeSerializedValue) throws IOException;
 
     /**
      * Returns checkpointing statistics for a job.
@@ -221,7 +222,7 @@ public interface RestEndpoint {
      * @param jobId                   32-character hexadecimal string value that identifies a job.
      * @param maxExceptions(optional) Comma-separated list of integer values that specifies the upper limit of exceptions to return.
      */
-    CompletableFuture<JobExceptionsInfoWithHistory> jobException(String jobId, String maxExceptions) throws IOException;
+    CompletableFuture<JobExceptionsInfoWithHistory> jobException(String jobId, Optional<String> maxExceptions) throws IOException;
 
     /**
      * Returns the result of a job execution.
@@ -441,7 +442,7 @@ public interface RestEndpoint {
      * @param agg(optional)          Comma-separated list of aggregation modes which should be calculated. Available aggregations are: "min, max, sum, avg".
      * @param taskmanagers(optional) Comma-separated list of 32-character hexadecimal strings to select specific task managers.
      */
-    CompletableFuture<MetricCollectionResponseBody> taskManagersMetrics(Optional<String> get, Optional<String> agg, Optional<String> taskmanagers) throws IOException;
+    CompletableFuture<AggregatedMetricsResponseBody> taskManagersMetrics(Optional<String> get, Optional<String> agg, Optional<String> taskmanagers) throws IOException;
 
     /**
      * Returns details for a task manager.

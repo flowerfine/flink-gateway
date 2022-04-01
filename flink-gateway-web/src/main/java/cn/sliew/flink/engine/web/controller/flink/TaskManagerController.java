@@ -3,6 +3,7 @@ package cn.sliew.flink.engine.web.controller.flink;
 import cn.sliew.flink.gateway.engine.endpoint.RestEndpoint;
 import cn.sliew.flink.gateway.engine.endpoint.impl.RestEndpointImpl;
 import org.apache.flink.runtime.rest.messages.LogListInfo;
+import org.apache.flink.runtime.rest.messages.job.metrics.AggregatedMetricsResponseBody;
 import org.apache.flink.runtime.rest.messages.job.metrics.MetricCollectionResponseBody;
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagerDetailsInfo;
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagersInfo;
@@ -25,9 +26,9 @@ public class TaskManagerController {
     }
 
     @GetMapping("metrics")
-    public CompletableFuture<MetricCollectionResponseBody> taskMangersMetrics(@RequestParam(value = "get", required = false) Optional<String> get,
-                                                                              @RequestParam(value = "agg", required = false) Optional<String> agg,
-                                                                              @RequestParam(value = "taskmanagers", required = false) Optional<String> taskmanagers) throws IOException {
+    public CompletableFuture<AggregatedMetricsResponseBody> taskMangersMetrics(@RequestParam(value = "get", required = false) Optional<String> get,
+                                                                               @RequestParam(value = "agg", required = false) Optional<String> agg,
+                                                                               @RequestParam(value = "taskmanagers", required = false) Optional<String> taskmanagers) throws IOException {
         return endpoint.taskManagersMetrics(get, agg, taskmanagers);
     }
 

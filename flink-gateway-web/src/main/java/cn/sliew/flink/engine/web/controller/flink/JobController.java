@@ -18,6 +18,7 @@ import org.apache.flink.runtime.rest.messages.job.JobDetailsInfo;
 import org.apache.flink.runtime.rest.messages.job.JobExecutionResultResponseBody;
 import org.apache.flink.runtime.rest.messages.job.JobSubmitRequestBody;
 import org.apache.flink.runtime.rest.messages.job.JobSubmitResponseBody;
+import org.apache.flink.runtime.rest.messages.job.metrics.AggregatedMetricsResponseBody;
 import org.apache.flink.runtime.rest.messages.job.metrics.MetricCollectionResponseBody;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointInfo;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointTriggerRequestBody;
@@ -47,9 +48,9 @@ public class JobController {
     }
 
     @GetMapping("/metrics")
-    public CompletableFuture<MetricCollectionResponseBody> jobsMetrics(@RequestParam(value = "get", required = false) Optional<String> get,
-                                                                       @RequestParam(value = "agg", required = false) Optional<String> agg,
-                                                                       @RequestParam(value = "jobs", required = false) Optional<String> jobs) throws IOException {
+    public CompletableFuture<AggregatedMetricsResponseBody> jobsMetrics(@RequestParam(value = "get", required = false) Optional<String> get,
+                                                                        @RequestParam(value = "agg", required = false) Optional<String> agg,
+                                                                        @RequestParam(value = "jobs", required = false) Optional<String> jobs) throws IOException {
         return endpoint.jobsMetric(get, agg, jobs);
     }
 
@@ -70,8 +71,9 @@ public class JobController {
     }
 
     @GetMapping("{jobId}/exceptions")
-    public CompletableFuture<JobExceptionsInfoWithHistory> jobExceptions(@PathVariable("jobId") String jobId) throws IOException {
-        return endpoint.jobException(jobId, null);
+    public CompletableFuture<JobExceptionsInfoWithHistory> jobExceptions(@PathVariable("jobId") String jobId,
+                                                                         @RequestParam(value = "maxExceptions", required = false) Optional<String> maxExceptions) throws IOException {
+        return endpoint.jobException(jobId, maxExceptions);
     }
 
     @GetMapping("{jobId}/execution-result")
@@ -80,8 +82,9 @@ public class JobController {
     }
 
     @GetMapping("{jobId}/accumulators")
-    public CompletableFuture<JobAccumulatorsInfo> jobAccumulators(@PathVariable("jobId") String jobId) throws IOException {
-        return endpoint.jobAccumulators(jobId, null);
+    public CompletableFuture<JobAccumulatorsInfo> jobAccumulators(@PathVariable("jobId") String jobId,
+                                                                  @RequestParam(value = "includeSerializedValue", required = false) Optional<Boolean> includeSerializedValue) throws IOException {
+        return endpoint.jobAccumulators(jobId, includeSerializedValue);
     }
 
     @GetMapping("{jobId}/plan")

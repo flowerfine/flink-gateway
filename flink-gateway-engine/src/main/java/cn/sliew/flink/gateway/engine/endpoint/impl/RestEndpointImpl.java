@@ -21,6 +21,7 @@ import org.apache.flink.runtime.rest.messages.checkpoints.CheckpointingStatistic
 import org.apache.flink.runtime.rest.messages.checkpoints.TaskCheckpointStatisticsWithSubtaskDetails;
 import org.apache.flink.runtime.rest.messages.dataset.ClusterDataSetListResponseBody;
 import org.apache.flink.runtime.rest.messages.job.*;
+import org.apache.flink.runtime.rest.messages.job.metrics.AggregatedMetricsResponseBody;
 import org.apache.flink.runtime.rest.messages.job.metrics.MetricCollectionResponseBody;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointDisposalRequest;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointInfo;
@@ -259,7 +260,7 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> jobsMetric(Optional<String> get, Optional<String> agg, Optional<String> jobs) throws IOException {
+    public CompletableFuture<AggregatedMetricsResponseBody> jobsMetric(Optional<String> get, Optional<String> agg, Optional<String> jobs) throws IOException {
         String url = webInterfaceURL + "/jobs/metrics";
         List<String> queryParams = new LinkedList<>();
         if (get.isPresent()) {
@@ -279,7 +280,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        return remoteCall(request, MetricCollectionResponseBody.class);
+        return remoteCall(request, AggregatedMetricsResponseBody.class);
     }
 
     @Override
@@ -327,10 +328,10 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<JobAccumulatorsInfo> jobAccumulators(String jobId, Boolean includeSerializedValue) throws IOException {
+    public CompletableFuture<JobAccumulatorsInfo> jobAccumulators(String jobId, Optional<Boolean> includeSerializedValue) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/accumulators";
-        if (includeSerializedValue != null) {
-            url = url + "?includeSerializedValue=" + includeSerializedValue;
+        if (includeSerializedValue.isPresent()) {
+            url = url + "?includeSerializedValue=" + includeSerializedValue.get();
         }
         Request request = new Request.Builder()
                 .get()
@@ -390,10 +391,10 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<JobExceptionsInfoWithHistory> jobException(String jobId, String maxExceptions) throws IOException {
+    public CompletableFuture<JobExceptionsInfoWithHistory> jobException(String jobId, Optional<String> maxExceptions) throws IOException {
         String url = webInterfaceURL + "/jobs/" + jobId + "/exceptions";
-        if (StringUtils.isNotBlank(maxExceptions)) {
-            url = url + "?maxExceptions=" + maxExceptions;
+        if (maxExceptions.isPresent()) {
+            url = url + "?maxExceptions=" + maxExceptions.get();
         }
         Request request = new Request.Builder()
                 .get()
@@ -693,7 +694,7 @@ public class RestEndpointImpl implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> taskManagersMetrics(Optional<String> get, Optional<String> agg, Optional<String> taskmanagers) throws IOException {
+    public CompletableFuture<AggregatedMetricsResponseBody> taskManagersMetrics(Optional<String> get, Optional<String> agg, Optional<String> taskmanagers) throws IOException {
         String url = webInterfaceURL + "/taskmanagers/metrics";
         List<String> queryParams = new LinkedList<>();
         if (get.isPresent()) {
@@ -713,7 +714,7 @@ public class RestEndpointImpl implements RestEndpoint {
                 .get()
                 .url(url)
                 .build();
-        return remoteCall(request, MetricCollectionResponseBody.class);
+        return remoteCall(request, AggregatedMetricsResponseBody.class);
     }
 
     @Override

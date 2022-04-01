@@ -10,6 +10,7 @@ import org.apache.flink.runtime.rest.RestClient;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationInfo;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationResult;
 import org.apache.flink.runtime.rest.handler.async.TriggerResponse;
+import org.apache.flink.runtime.rest.handler.job.metrics.AggregatingJobsMetricsHandler;
 import org.apache.flink.runtime.rest.handler.job.rescaling.RescalingStatusHeaders;
 import org.apache.flink.runtime.rest.handler.job.rescaling.RescalingStatusMessageParameters;
 import org.apache.flink.runtime.rest.handler.job.rescaling.RescalingTriggerHeaders;
@@ -149,11 +150,12 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> jobsMetric(Optional<String> get, Optional<String> agg, Optional<String> jobs) throws IOException {
-        JobMetricsMessageParameters parameters = new JobMetricsMessageParameters();
-        get.ifPresent(metrics -> toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(metrics)));
-        jobs.ifPresent(job -> toIllegalArgument(() -> parameters.jobPathParameter.resolveFromString(job)));
-        return client.sendRequest(address, port, JobMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
+    public CompletableFuture<AggregatedMetricsResponseBody> jobsMetric(Optional<String> get, Optional<String> agg, Optional<String> jobs) throws IOException {
+        AggregatedJobMetricsParameters parameters = new AggregatedJobMetricsParameters();
+        get.ifPresent(metrics -> toIllegalArgument(() -> parameters.metrics.resolveFromString(metrics)));
+        agg.ifPresent(aggs -> toIllegalArgument(() -> parameters.aggs.resolveFromString(aggs)));
+        jobs.ifPresent(job -> toIllegalArgument(() -> parameters.selector.resolveFromString(job)));
+        return client.sendRequest(address, port, AggregatedJobMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
@@ -182,10 +184,10 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<JobAccumulatorsInfo> jobAccumulators(String jobId, Boolean includeSerializedValue) throws IOException {
+    public CompletableFuture<JobAccumulatorsInfo> jobAccumulators(String jobId, Optional<Boolean> includeSerializedValue) throws IOException {
         JobAccumulatorsMessageParameters parameters = new JobAccumulatorsMessageParameters();
         toIllegalArgument(() -> parameters.jobPathParameter.resolveFromString(jobId));
-        toIllegalArgument(() -> parameters.includeSerializedAccumulatorsParameter.resolveFromString(includeSerializedValue.toString()));
+        includeSerializedValue.ifPresent(param -> toIllegalArgument(() -> parameters.includeSerializedAccumulatorsParameter.resolveFromString(param.toString())));
         return client.sendRequest(address, port, JobAccumulatorsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
@@ -228,10 +230,10 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<JobExceptionsInfoWithHistory> jobException(String jobId, String maxExceptions) throws IOException {
+    public CompletableFuture<JobExceptionsInfoWithHistory> jobException(String jobId, Optional<String> maxExceptions) throws IOException {
         JobExceptionsMessageParameters parameters = new JobExceptionsMessageParameters();
         toIllegalArgument(() -> parameters.jobPathParameter.resolveFromString(jobId));
-        toIllegalArgument(() -> parameters.upperLimitExceptionParameter.resolveFromString(maxExceptions));
+        maxExceptions.ifPresent(param -> toIllegalArgument(() -> parameters.upperLimitExceptionParameter.resolveFromString(param)));
         return client.sendRequest(address, port, JobExceptionsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
@@ -436,11 +438,12 @@ public class RestEndpointImpl2 implements RestEndpoint {
     }
 
     @Override
-    public CompletableFuture<MetricCollectionResponseBody> taskManagersMetrics(Optional<String> get, Optional<String> agg, Optional<String> taskmanagers) throws IOException {
-        TaskManagerMetricsMessageParameters parameters = new TaskManagerMetricsMessageParameters();
-        get.ifPresent(metrics -> toIllegalArgument(() -> parameters.metricsFilterParameter.resolveFromString(metrics)));
-        taskmanagers.ifPresent(taskmanager -> toIllegalArgument(() -> parameters.taskManagerIdParameter.resolveFromString(taskmanager)));
-        return client.sendRequest(address, port, TaskManagerMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
+    public CompletableFuture<AggregatedMetricsResponseBody> taskManagersMetrics(Optional<String> get, Optional<String> agg, Optional<String> taskmanagers) throws IOException {
+        AggregateTaskManagerMetricsParameters parameters = new AggregateTaskManagerMetricsParameters();
+        get.ifPresent(metrics -> toIllegalArgument(() -> parameters.metrics.resolveFromString(metrics)));
+        agg.ifPresent(aggs -> toIllegalArgument(() -> parameters.aggs.resolveFromString(aggs)));
+        taskmanagers.ifPresent(taskmanager -> toIllegalArgument(() -> parameters.selector.resolveFromString(taskmanager)));
+        return client.sendRequest(address, port, AggregatedTaskManagerMetricsHeaders.getInstance(), parameters, EmptyRequestBody.getInstance());
     }
 
     @Override
