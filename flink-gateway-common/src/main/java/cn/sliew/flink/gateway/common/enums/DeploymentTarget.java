@@ -1,4 +1,4 @@
-package cn.sliew.flink.gateway.engine.enums;
+package cn.sliew.flink.gateway.common.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;

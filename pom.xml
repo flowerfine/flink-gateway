@@ -16,6 +16,7 @@
     <description>flink-gateway</description>
 
     <modules>
+        <module>flink-gateway-common</module>
         <module>flink-gateway-dao</module>
         <module>flink-gateway-engine</module>
         <module>flink-gateway-web</module>
@@ -77,6 +78,11 @@
                 <scope>import</scope>
             </dependency>
 
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>flink-gateway-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>flink-gateway-dao</artifactId>
