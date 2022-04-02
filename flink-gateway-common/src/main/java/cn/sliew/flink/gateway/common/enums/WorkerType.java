@@ -8,7 +8,8 @@ import lombok.Getter;
 public enum WorkerType {
 
     CONTAINER(0, "容器"),
-    MACHINE(1, "物理机器");
+    MACHINE(1, "物理机器"),
+    ;
 
     @JsonValue
     @EnumValue
