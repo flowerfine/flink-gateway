@@ -13,6 +13,10 @@
     <dependencies>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
+            <artifactId>flink-gateway-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
             <artifactId>flink-gateway-dao</artifactId>
         </dependency>
 

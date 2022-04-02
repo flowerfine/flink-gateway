@@ -1,6 +1,6 @@
 package cn.sliew.flink.gateway.engine.endpoint;
 
-import cn.sliew.flink.gateway.engine.enums.DeploymentTarget;
+import cn.sliew.flink.gateway.common.enums.DeploymentTarget;
 import org.apache.flink.configuration.Configuration;
 
 public interface CliEndpoint {
