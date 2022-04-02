@@ -1,4 +1,4 @@
-package cn.sliew.flink.engine.web.controller.config;
+package cn.sliew.flink.gateway.web.controller.config;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;

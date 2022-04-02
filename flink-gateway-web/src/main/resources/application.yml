@@ -1,2 +1,38 @@
+spring:
+  application.name: flink-gateway
+#  profiles.include: knife4j
+  main.banner-mode: log
+  mvc.pathmatch.matching-strategy: ant-path-matcher
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      auto-commit: true
+      idle-timeout: 600000
+      pool-name: ${spring.application.name}
+      max-lifetime: 900000
+      connection-timeout: 10000
+      connection-test-query: SELECT 1
+      validation-timeout: 1000
+      gateway:
+        url: jdbc:mysql://127.0.0.1:3306/gateway?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai&useAffectedRows=true
+        username: root
+        password: 123
 
-spring.mvc.pathmatch.matching-strategy: ant-path-matcher
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
+
+logging:
+  level:
+    root: debug
+management:
+  auditevents:
+    enabled: true

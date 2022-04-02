@@ -1,4 +1,4 @@
-package cn.sliew.flink.engine.web.controller.flink;
+package cn.sliew.flink.gateway.web.controller.flink;
 
 import cn.sliew.flink.gateway.engine.endpoint.RestEndpoint;
 import cn.sliew.flink.gateway.engine.endpoint.impl.RestEndpointImpl;

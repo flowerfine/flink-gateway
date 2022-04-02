@@ -1,4 +1,4 @@
-package cn.sliew.flink.engine.web.http.message;
+package cn.sliew.flink.gateway.web.http.message;
 
 import cn.sliew.flink.gateway.engine.util.FlinkShadedJacksonUtil;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonGenerator;
