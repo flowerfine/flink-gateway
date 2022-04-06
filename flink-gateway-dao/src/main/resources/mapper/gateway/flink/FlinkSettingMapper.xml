@@ -22,5 +22,9 @@
         creator, updater, deleted, create_time, update_time, comments
     </sql>
 
+    <insert id="insertSelective">
+
+    </insert>
+
 
 </mapper>
