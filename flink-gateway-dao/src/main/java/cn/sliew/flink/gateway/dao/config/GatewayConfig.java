@@ -1,5 +1,7 @@
 package cn.sliew.flink.gateway.dao.config;
 
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.core.config.GlobalConfig;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.annotation.MapperScan;
@@ -23,11 +25,25 @@ public class GatewayConfig extends MybatisPlusConfig {
     private DataSource dataSource;
 
     @Bean(GATEWAY_SQL_SESSION_FACTORY_NAME)
-    public SqlSessionFactory dataserviceSqlSessionFactory() throws Exception {
+    public SqlSessionFactory gatewaySqlSessionFactory() throws Exception {
         MybatisSqlSessionFactoryBean factoryBean = new MybatisSqlSessionFactoryBean();
         factoryBean.setDataSource(dataSource);
+        factoryBean.setConfiguration(buildMybatisConfiguration());
+        factoryBean.setGlobalConfig(buildGlobalConfig());
         factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mapper/gateway/**/*.xml"));
         return factoryBean.getObject();
+    }
+
+    private MybatisConfiguration buildMybatisConfiguration() {
+        MybatisConfiguration configuration = new MybatisConfiguration();
+        configuration.setMapUnderscoreToCamelCase(true);
+        return configuration;
+    }
+
+    private GlobalConfig buildGlobalConfig() {
+        GlobalConfig globalConfig = new GlobalConfig();
+        globalConfig.setBanner(false);
+        return globalConfig;
     }
 
 }
