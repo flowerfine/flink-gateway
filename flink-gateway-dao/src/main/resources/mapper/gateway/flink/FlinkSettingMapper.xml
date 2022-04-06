@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sliew.flink.gateway.dao.mapper.gateway.flink.FlinkSettingMapper">
+
+    <resultMap id="BaseResultMap" type="cn.sliew.flink.gateway.dao.entity.gateway.flink.FlinkSetting">
+        <id column="id" property="id"/>
+        <result column="flink_version" property="flinkVersion"/>
+        <result column="scala_version" property="scalaVersion"/>
+        <result column="java_version" property="javaVersion"/>
+        <result column="flink_home" property="flinkHome"/>
+        <result column="desc" property="desc"/>
+        <result column="creator" property="creator"/>
+        <result column="updater" property="updater"/>
+        <result column="deleted" property="deleted"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="comments" property="comments"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, flink_version, scala_version, java_version, flink_home, `desc`,
+        creator, updater, deleted, create_time, update_time, comments
+    </sql>
+
+
+</mapper>
