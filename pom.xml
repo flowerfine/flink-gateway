@@ -18,7 +18,9 @@
     <modules>
         <module>flink-gateway-common</module>
         <module>flink-gateway-dao</module>
+        <module>flink-gateway-model</module>
         <module>flink-gateway-engine</module>
+        <module>flink-gateway-service</module>
         <module>flink-gateway-web</module>
     </modules>
 
@@ -90,7 +92,17 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>flink-gateway-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>flink-gateway-engine</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>flink-gateway-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
