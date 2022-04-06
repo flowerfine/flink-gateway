@@ -1,8 +1,38 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+CREATE TABLE `tenant_region` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `parent_id` bigint NOT NULL DEFAULT '0' COMMENT '上级区域 id',
+  `region` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '区域名称',
+  `avatar` varchar(256) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '头像',
+  `desc` varchar(256) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '描述',
+  `creator` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'system' COMMENT '创建人 ',
+  `updater` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'system' COMMENT '修改者',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `comments` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '备注',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_region` (`region`),
+  KEY `idx_update_time` (`update_time`)
+) ENGINE=InnoDB COMMENT='区域';
 
-
+CREATE TABLE `tenant_namespace` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `namespace` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '区域名称',
+  `region_id` bigint NOT NULL COMMENT '区域 id',
+  `desc` varchar(256) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '描述',
+  `creator` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'system' COMMENT '创建人 ',
+  `updater` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'system' COMMENT '修改者',
+  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `comments` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '备注',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_namespace` (`namespace`),
+  KEY `idx_update_time` (`update_time`)
+) ENGINE=InnoDB COMMENT='命名空间';
 
 
 -- 如何部署。在物理机上或者容器中，使用本地或者远程的数据执行用于部署 flink job。
@@ -80,38 +110,5 @@ create table flink_job_log (
   PRIMARY KEY (`id`),
   KEY `idx_update_time` (`update_time`)
 ) ENGINE=InnoDB COMMENT='flink 任务日志';
-
-CREATE TABLE `sys_namespace` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `namespace` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '区域名称',
-  `region_id` bigint NOT NULL COMMENT '区域 id',
-  `desc` varchar(256) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '描述',
-  `creator` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'system' COMMENT '创建人 ',
-  `updater` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'system' COMMENT '修改者',
-  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-  `comments` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '备注',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_namespace` (`namespace`),
-  KEY `idx_update_time` (`update_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='命名空间';
-
-CREATE TABLE `sys_region` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `parent_id` bigint NOT NULL DEFAULT '0' COMMENT '上级区域 id',
-  `region` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '区域名称',
-  `avatar` varchar(256) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '头像',
-  `desc` varchar(256) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '描述',
-  `creator` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'system' COMMENT '创建人 ',
-  `updater` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'system' COMMENT '修改者',
-  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-  `comments` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '备注',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_region` (`region`),
-  KEY `idx_update_time` (`update_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='区域';
 
 SET FOREIGN_KEY_CHECKS = 1;

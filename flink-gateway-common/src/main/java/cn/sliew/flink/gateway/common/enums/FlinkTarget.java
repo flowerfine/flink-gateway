@@ -5,6 +5,5 @@ public enum FlinkTarget {
     ;
 
     private int code;
-    private FlinkVersion version;
 
 }

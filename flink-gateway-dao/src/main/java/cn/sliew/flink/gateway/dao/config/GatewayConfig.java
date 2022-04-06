@@ -26,7 +26,7 @@ public class GatewayConfig extends MybatisPlusConfig {
     public SqlSessionFactory dataserviceSqlSessionFactory() throws Exception {
         MybatisSqlSessionFactoryBean factoryBean = new MybatisSqlSessionFactoryBean();
         factoryBean.setDataSource(dataSource);
-        factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mybatis/mapper/gateway/**/*.xml"));
+        factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mapper/gateway/**/*.xml"));
         return factoryBean.getObject();
     }
 
