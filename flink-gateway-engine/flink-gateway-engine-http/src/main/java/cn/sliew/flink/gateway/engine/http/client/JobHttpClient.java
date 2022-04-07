@@ -1,252 +1,47 @@
-package cn.sliew.flink.gateway.engine.endpoint.impl;
+package cn.sliew.flink.gateway.engine.http.client;
 
-import cn.sliew.flink.gateway.engine.endpoint.RestEndpoint;
-import cn.sliew.flink.gateway.engine.util.FlinkShadedJacksonUtil;
+import cn.sliew.flink.gateway.engine.base.client.JobClient;
+import cn.sliew.flink.gateway.engine.http.util.FlinkShadedJacksonUtil;
 import cn.sliew.milky.common.check.Ensures;
-import cn.sliew.milky.common.exception.Rethrower;
 import cn.sliew.milky.common.util.StringUtils;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.*;
 import okhttp3.internal.Util;
 import org.apache.flink.runtime.messages.webmonitor.JobIdsWithStatusOverview;
 import org.apache.flink.runtime.messages.webmonitor.MultipleJobsDetails;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationInfo;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationResult;
 import org.apache.flink.runtime.rest.handler.async.TriggerResponse;
-import org.apache.flink.runtime.rest.handler.legacy.messages.ClusterOverviewWithVersion;
 import org.apache.flink.runtime.rest.messages.*;
 import org.apache.flink.runtime.rest.messages.checkpoints.CheckpointConfigInfo;
 import org.apache.flink.runtime.rest.messages.checkpoints.CheckpointStatistics;
 import org.apache.flink.runtime.rest.messages.checkpoints.CheckpointingStatistics;
 import org.apache.flink.runtime.rest.messages.checkpoints.TaskCheckpointStatisticsWithSubtaskDetails;
-import org.apache.flink.runtime.rest.messages.dataset.ClusterDataSetListResponseBody;
 import org.apache.flink.runtime.rest.messages.job.*;
 import org.apache.flink.runtime.rest.messages.job.metrics.AggregatedMetricsResponseBody;
 import org.apache.flink.runtime.rest.messages.job.metrics.MetricCollectionResponseBody;
-import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointDisposalRequest;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointInfo;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointTriggerRequestBody;
 import org.apache.flink.runtime.rest.messages.job.savepoints.stop.StopWithSavepointRequestBody;
-import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagerDetailsInfo;
-import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagersInfo;
-import org.apache.flink.runtime.rest.messages.taskmanager.ThreadDumpInfo;
-import org.apache.flink.runtime.rest.util.RestConstants;
-import org.apache.flink.runtime.rest.versioning.RestAPIVersion;
-import org.apache.flink.runtime.webmonitor.handlers.*;
 import org.apache.flink.runtime.webmonitor.threadinfo.JobVertexFlameGraph;
 
-import java.io.File;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class RestEndpointImpl implements RestEndpoint {
+import static cn.sliew.flink.gateway.engine.http.client.FlinkHttpClient.APPLICATION_JSON;
 
-    public static final MediaType APPLICATION_JSON = MediaType.get(RestConstants.REST_CONTENT_TYPE);
-
-    private static final OkHttpClient client = new OkHttpClient.Builder()
-            .connectTimeout(Duration.ofSeconds(3L))
-            .readTimeout(Duration.ofSeconds(3L))
-            .writeTimeout(Duration.ofSeconds(3L))
-            .callTimeout(Duration.ofSeconds(3L))
-            .addInterceptor(new LogInterceptor())
-            .build();
-
+public class JobHttpClient extends AsyncClient implements JobClient {
 
     private final String webInterfaceURL;
 
-    public RestEndpointImpl(String webInterfaceURL) {
-        this.webInterfaceURL = webInterfaceURL + "/" + RestAPIVersion.V1.getURLVersionPrefix();
-    }
-
-    private CompletableFuture<EmptyResponseBody> remoteCall(Request request) throws IOException {
-        FutureResponse future = new FutureResponse();
-        client.newCall(request).enqueue(future);
-        return map(future, json -> EmptyResponseBody.getInstance());
-    }
-
-    private <Out, In> CompletableFuture<Out> remoteCall(Request request, Class<Out> outClass, Class<In> parameterClasses) throws IOException {
-        FutureResponse future = new FutureResponse();
-        client.newCall(request).enqueue(future);
-        return map(future, json -> FlinkShadedJacksonUtil.parseJsonString(json, outClass, parameterClasses));
-    }
-
-    private <T> CompletableFuture<T> remoteCall(Request request, Class<T> responseClass) throws IOException {
-        FutureResponse future = new FutureResponse();
-        client.newCall(request).enqueue(future);
-        return map(future, json -> FlinkShadedJacksonUtil.parseJsonString(json, responseClass));
-    }
-
-    private <T> CompletableFuture<T> map(FutureResponse future, Function<String, T> parser) {
-        return future.future.thenApply(response -> {
-            try {
-                checkStatus(response);
-                return parser.apply(response.body().string());
-            } catch (IOException e) {
-                Rethrower.throwAs(e);
-                return null;
-            } finally {
-                response.close();
-            }
-        });
-    }
-
-    @Override
-    public CompletableFuture<DashboardConfiguration> config() throws IOException {
-        String url = webInterfaceURL + "/config";
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, DashboardConfiguration.class);
-    }
-
-    @Override
-    public CompletableFuture<ClusterOverviewWithVersion> overview() throws IOException {
-        String url = webInterfaceURL + "/overview";
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, ClusterOverviewWithVersion.class);
-    }
-
-    @Override
-    public CompletableFuture<EmptyResponseBody> shutdownCluster() throws IOException {
-        String url = webInterfaceURL + "/cluster";
-        Request request = new Request.Builder()
-                .delete()
-                .url(url)
-                .build();
-        return remoteCall(request);
-    }
-
-    @Override
-    public CompletableFuture<ClusterDataSetListResponseBody> datasets() throws IOException {
-        String url = webInterfaceURL + "/datasets";
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, ClusterDataSetListResponseBody.class);
-    }
-
-    @Override
-    public CompletableFuture<TriggerResponse> deleteDataSet(String datasetId) throws IOException {
-        String url = webInterfaceURL + "/datasets/" + datasetId;
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, TriggerResponse.class);
-    }
-
-    @Override
-    public CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> deleteDataSetStatus(String triggerId) throws IOException {
-        String url = webInterfaceURL + "/datasets/delete/" + triggerId;
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, AsynchronousOperationResult.class, AsynchronousOperationInfo.class).thenApply(result -> {
-            AsynchronousOperationResult<AsynchronousOperationInfo> type = result;
-            return type;
-        });
-    }
-
-    @Override
-    public CompletableFuture<JarListInfo> jars() throws IOException {
-        String url = webInterfaceURL + "/jars";
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, JarListInfo.class);
-    }
-
-    @Override
-    public CompletableFuture<JarUploadResponseBody> uploadJar(String filePath) throws IOException {
-        String url = webInterfaceURL + "/jars/upload";
-        File jarFile = new File(filePath);
-        MultipartBody body = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("jarfile", jarFile.getName(), RequestBody.create(jarFile, MediaType.get(RestConstants.CONTENT_TYPE_JAR)))
-                .build();
-        Request request = new Request.Builder()
-                .post(body)
-                .url(url)
-                .build();
-        return remoteCall(request, JarUploadResponseBody.class);
-    }
-
-    @Override
-    public CompletableFuture<EmptyResponseBody> deleteJar(String jarId) throws IOException {
-        String url = webInterfaceURL + "/jars/" + jarId;
-        Request request = new Request.Builder()
-                .delete()
-                .url(url)
-                .build();
-        return remoteCall(request);
-    }
-
-    @Override
-    public CompletableFuture<JobPlanInfo> jarPlan(String jarId, JarPlanRequestBody requestBody) throws IOException {
-        String url = webInterfaceURL + "/jars/" + jarId + "/plan";
-        RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
-        Request request = new Request.Builder()
-                .post(body)
-                .url(url)
-                .build();
-        return remoteCall(request, JobPlanInfo.class);
-    }
-
-    @Override
-    public CompletableFuture<JarRunResponseBody> jarRun(String jarId, JarRunRequestBody requestBody) throws IOException {
-        String url = webInterfaceURL + "/jars/" + jarId + "/run";
-        RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
-        Request request = new Request.Builder()
-                .post(body)
-                .url(url)
-                .build();
-        return remoteCall(request, JarRunResponseBody.class);
-    }
-
-    @Override
-    public CompletableFuture<ClusterConfigurationInfo> jobmanagerConfig() throws IOException {
-        String url = webInterfaceURL + "/jobmanager/config";
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, ClusterConfigurationInfo.class);
-    }
-
-    @Override
-    public CompletableFuture<LogListInfo> jobmanagerLogs() throws IOException {
-        String url = webInterfaceURL + "/jobmanager/logs";
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, LogListInfo.class);
-    }
-
-    @Override
-    public CompletableFuture<MetricCollectionResponseBody> jobmanagerMetrics(Optional<String> get) throws IOException {
-        String url = webInterfaceURL + "/jobmanager/metrics";
-        if (get.isPresent()) {
-            url = url + "?get=" + get.get();
-        }
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, MetricCollectionResponseBody.class);
+    public JobHttpClient(OkHttpClient client, String webInterfaceURL) {
+        super(client);
+        this.webInterfaceURL = webInterfaceURL;
     }
 
     @Override
@@ -657,113 +452,5 @@ public class RestEndpointImpl implements RestEndpoint {
                 .url(url)
                 .build();
         return remoteCall(request, MetricCollectionResponseBody.class);
-    }
-
-    @Override
-    public CompletableFuture<TriggerResponse> savepointDisposal(SavepointDisposalRequest requestBody) throws IOException {
-        String url = webInterfaceURL + "/savepoint-disposal";
-        RequestBody body = RequestBody.create(FlinkShadedJacksonUtil.toJsonString(requestBody), APPLICATION_JSON);
-        Request request = new Request.Builder()
-                .post(body)
-                .url(url)
-                .build();
-        return remoteCall(request, TriggerResponse.class);
-    }
-
-    @Override
-    public CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> savepointDisposalResult(String triggerId) throws IOException {
-        String url = webInterfaceURL + "/savepoint-disposal/" + triggerId;
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, AsynchronousOperationResult.class, AsynchronousOperationInfo.class).thenApply(result -> {
-            AsynchronousOperationResult<AsynchronousOperationInfo> type = result;
-            return type;
-        });
-    }
-
-    @Override
-    public CompletableFuture<TaskManagersInfo> taskManagers() throws IOException {
-        String url = webInterfaceURL + "/taskmanagers";
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, TaskManagersInfo.class);
-    }
-
-    @Override
-    public CompletableFuture<AggregatedMetricsResponseBody> taskManagersMetrics(Optional<String> get, Optional<String> agg, Optional<String> taskmanagers) throws IOException {
-        String url = webInterfaceURL + "/taskmanagers/metrics";
-        List<String> queryParams = new LinkedList<>();
-        if (get.isPresent()) {
-            queryParams.add("get=" + get.get());
-        }
-        if (agg.isPresent()) {
-            queryParams.add("agg=" + agg.get());
-        }
-        if (taskmanagers.isPresent()) {
-            queryParams.add("taskmanagers=" + taskmanagers.get());
-        }
-        if (queryParams.isEmpty() == false) {
-            String params = queryParams.stream().collect(Collectors.joining("&"));
-            url = url + "?" + params;
-        }
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, AggregatedMetricsResponseBody.class);
-    }
-
-    @Override
-    public CompletableFuture<TaskManagerDetailsInfo> taskManagerDetail(String taskManagerId) throws IOException {
-        String url = webInterfaceURL + "/taskmanagers/" + taskManagerId;
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, TaskManagerDetailsInfo.class);
-    }
-
-    @Override
-    public CompletableFuture<LogListInfo> taskManagerLogs(String taskManagerId) throws IOException {
-        String url = webInterfaceURL + "/taskmanagers/" + taskManagerId + "/logs";
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, LogListInfo.class);
-    }
-
-    @Override
-    public CompletableFuture<MetricCollectionResponseBody> taskManagerMetrics(String taskManagerId, Optional<String> get) throws IOException {
-        String url = webInterfaceURL + "/taskmanagers/" + taskManagerId + "/metrics";
-        if (get.isPresent()) {
-            url = url + "?get=" + get.get();
-        }
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, MetricCollectionResponseBody.class);
-    }
-
-    @Override
-    public CompletableFuture<ThreadDumpInfo> taskManagerThreadDump(String taskManagerId) throws IOException {
-        String url = webInterfaceURL + "/taskmanagers/" + taskManagerId + "/thread-dump";
-        Request request = new Request.Builder()
-                .get()
-                .url(url)
-                .build();
-        return remoteCall(request, ThreadDumpInfo.class);
-    }
-
-    private void checkStatus(Response response) throws IOException {
-        if (response.isSuccessful() == false) {
-            String error = String.format("code: %d, message: %s, body: %s", response.code(), response.message(), response.body().string());
-            throw new RuntimeException(error);
-        }
     }
 }

@@ -1,7 +1,6 @@
 package cn.sliew.flink.gateway.web.controller.flink;
 
 import cn.sliew.flink.gateway.engine.endpoint.RestEndpoint;
-import cn.sliew.flink.gateway.engine.endpoint.impl.RestEndpointImpl;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationInfo;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationResult;
 import org.apache.flink.runtime.rest.handler.async.TriggerResponse;

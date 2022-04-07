@@ -1,6 +1,5 @@
 package cn.sliew.flink.gateway.engine.job.graph;
 
-import cn.sliew.flink.gateway.engine.endpoint.impl.LogInterceptor;
 import cn.sliew.flink.gateway.engine.job.graph.protocol.JarRunRequest;
 import cn.sliew.flink.gateway.engine.job.graph.protocol.JarRunResponse;
 import cn.sliew.flink.gateway.engine.job.graph.protocol.JarUploadResponse;
