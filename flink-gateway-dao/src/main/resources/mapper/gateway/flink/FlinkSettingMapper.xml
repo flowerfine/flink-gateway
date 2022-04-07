@@ -9,9 +9,9 @@
         <result column="java_version" property="javaVersion"/>
         <result column="flink_home" property="flinkHome"/>
         <result column="desc" property="desc"/>
+        <result column="deleted" property="deleted"/>
         <result column="creator" property="creator"/>
         <result column="updater" property="updater"/>
-        <result column="deleted" property="deleted"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
         <result column="comments" property="comments"/>
@@ -22,9 +22,92 @@
         creator, updater, deleted, create_time, update_time, comments
     </sql>
 
-    <insert id="insertSelective">
-
+    <insert id="insertSelective"
+            parameterType="cn.sliew.flink.gateway.dao.entity.gateway.flink.FlinkSetting">
+        insert into flink_setting
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="flinkVersion != null">
+                flink_version,
+            </if>
+            <if test="scalaVersion != null">
+                scala_version,
+            </if>
+            <if test="javaVersion != null">
+                java_version,
+            </if>
+            <if test="flinkHome != null">
+                flink_home,
+            </if>
+            <if test="desc != null">
+                `desc`,
+            </if>
+            <if test="deleted != null">
+                deleted,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="updater != null">
+                updater,
+            </if>
+            <if test="comments != null">
+                comments,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="flinkVersion != null">
+                #{flinkVersion},
+            </if>
+            <if test="scalaVersion != null">
+                #{scalaVersion},
+            </if>
+            <if test="javaVersion != null">
+                #{javaVersion},
+            </if>
+            <if test="flinkHome != null">
+                #{flinkHome},
+            </if>
+            <if test="desc != null">
+                #{desc},
+            </if>
+            <if test="creator != null">
+                #{creator},
+            </if>
+            <if test="updater != null">
+                #{updater},
+            </if>
+            <if test="comments != null">
+                #{comments},
+            </if>
+        </trim>
     </insert>
 
-
+    <update id="updateByPrimaryKeySelective"
+            parameterType="cn.sliew.flink.gateway.dao.entity.gateway.flink.FlinkSetting">
+        update flink_setting
+        <set>
+            <if test="flinkVersion != null">
+                flink_version = #{flinkVersion},
+            </if>
+            <if test="scalaVersion != null">
+                scala_version = #{scalaVersion},
+            </if>
+            <if test="javaVersion != null">
+                java_version = #{javaVersion},
+            </if>
+            <if test="flinkHome != null">
+                flink_home = #{flinkHome},
+            </if>
+            <if test="desc != null">
+                `desc` = #{desc},
+            </if>
+            <if test="updater != null">
+                updater = #{updater},
+            </if>
+            <if test="comments != null">
+                comments = #{comments},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
 </mapper>

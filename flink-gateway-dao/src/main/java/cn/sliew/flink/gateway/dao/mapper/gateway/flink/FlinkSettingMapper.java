@@ -7,4 +7,5 @@ public interface FlinkSettingMapper extends BaseMapper<FlinkSetting> {
 
     int insertSelective(FlinkSetting record);
 
+    int updateByPrimaryKeySelective(FlinkSetting record);
 }

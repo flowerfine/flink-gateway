@@ -51,17 +51,17 @@ CREATE TABLE `image_registry` (
 
 CREATE TABLE `flink_setting` (
     `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `flink_version` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'flink 版本',
-    `scala_version` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'scala 版本',
-    `java_version` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'java 版本',
-    `flink_home` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'flink 配置目录。支持 file、hdfs、s3 协议',
-    `desc` varchar(256) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '描述',
+    `flink_version` varchar(16) COMMENT 'flink 版本',
+    `scala_version` varchar(16) COMMENT 'scala 版本',
+    `java_version` varchar(16) COMMENT 'java 版本',
+    `flink_home` varchar(256) COMMENT 'flink 配置目录。支持 file、hdfs、s3 协议',
+    `desc` varchar(256) NOT NULL DEFAULT '' COMMENT '描述',
     `deleted` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
-    `creator` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'system' COMMENT '创建人 ',
-    `updater` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'system' COMMENT '修改者',
+    `creator` varchar(64) NOT NULL DEFAULT 'system' COMMENT '创建人 ',
+    `updater` varchar(64) NOT NULL DEFAULT 'system' COMMENT '修改者',
     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-    `comments` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '备注',
+    `comments` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
     PRIMARY KEY (`id`),
     KEY `idx_update_time` (`update_time`)
 ) ENGINE=InnoDB COMMENT='flink 版本配置';
