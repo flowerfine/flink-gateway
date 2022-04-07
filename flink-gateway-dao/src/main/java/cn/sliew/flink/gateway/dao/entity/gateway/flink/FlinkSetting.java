@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * flink 版本配置
+ */
 @Getter
 @Setter
 public class FlinkSetting extends BaseEntityExt {

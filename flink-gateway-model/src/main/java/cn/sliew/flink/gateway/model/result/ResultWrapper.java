@@ -9,9 +9,6 @@ import java.io.Serial;
 @Setter
 public class ResultWrapper<T> implements Result {
 
-    static final String SUCCESS = "success";
-    static final String FAILURE = "failure";
-
     @Serial
     private static final long serialVersionUID = -6775375311523603147L;
 

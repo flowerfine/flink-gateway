@@ -5,5 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 public interface FlinkSettingMapper extends BaseMapper<FlinkSetting> {
 
+    int insertSelective(FlinkSetting record);
 
+    int updateByPrimaryKeySelective(FlinkSetting record);
 }
