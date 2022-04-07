@@ -1,8 +1,8 @@
-package cn.sliew.flink.gateway.engine.endpoint.impl;
+package cn.sliew.flink.gateway.engine.http.client;
 
-import cn.sliew.flink.gateway.engine.endpoint.CliEndpoint;
-import cn.sliew.flink.gateway.engine.endpoint.PackageJarJob;
 import cn.sliew.flink.gateway.common.enums.DeploymentTarget;
+import cn.sliew.flink.gateway.engine.base.client.SubmitClient;
+import cn.sliew.flink.gateway.engine.base.endpoint.PackageJarJob;
 import org.apache.flink.client.ClientUtils;
 import org.apache.flink.client.cli.ApplicationDeployer;
 import org.apache.flink.client.cli.CliFrontend;
@@ -19,7 +19,7 @@ import org.apache.flink.core.execution.PipelineExecutorServiceLoader;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-public class CliEndpointImpl implements CliEndpoint {
+public class DefaultSubmitClient implements SubmitClient {
 
     private final ClusterClientServiceLoader clusterClientServiceLoader = new DefaultClusterClientServiceLoader();
     private final ApplicationDeployer deployer = new ApplicationClusterDeployer(clusterClientServiceLoader);
@@ -41,6 +41,7 @@ public class CliEndpointImpl implements CliEndpoint {
      */
     @Override
     public void submit(DeploymentTarget deploymentTarget, Configuration configuration, PackageJarJob job) throws Exception {
+        deploymentTarget.apply(configuration);
         try (PackagedProgram program = buildProgram(configuration, job)) {
             ClientUtils.executeProgram(pipelineExecutorServiceLoader, configuration, program, false, false);
         }
@@ -79,5 +80,4 @@ public class CliEndpointImpl implements CliEndpoint {
         }
         return jarFile;
     }
-
 }
