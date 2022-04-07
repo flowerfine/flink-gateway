@@ -28,7 +28,7 @@ public class FlinkHttpClient implements FlinkClient {
 
     @Override
     public SubmitClient submit() {
-        return null;
+        return new DefaultSubmitClient();
     }
 
     @Override

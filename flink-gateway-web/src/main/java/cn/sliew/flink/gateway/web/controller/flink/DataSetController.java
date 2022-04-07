@@ -1,7 +1,7 @@
 package cn.sliew.flink.gateway.web.controller.flink;
 
-import cn.sliew.flink.gateway.engine.endpoint.impl.RestEndpointImpl2;
-import org.apache.flink.configuration.GlobalConfiguration;
+import cn.sliew.flink.gateway.engine.base.client.FlinkClient;
+import cn.sliew.flink.gateway.engine.http.client.FlinkHttpClient;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationInfo;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationResult;
 import org.apache.flink.runtime.rest.handler.async.TriggerResponse;
@@ -15,21 +15,20 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/flink/datasets")
 public class DataSetController {
 
-//    private RestEndpoint endpoint = new RestEndpointImpl("http://localhost:8081");
-    private RestEndpoint endpoint = new RestEndpointImpl2(GlobalConfiguration.loadConfiguration());
+    private FlinkClient client = new FlinkHttpClient("http://localhost:8081");
 
     @GetMapping("/")
     public CompletableFuture<ClusterDataSetListResponseBody> datasets() throws IOException {
-        return endpoint.datasets();
+        return client.dataSet().datasets();
     }
 
     @DeleteMapping("/{dataSetId}")
     public CompletableFuture<TriggerResponse> delete(@PathVariable("dataSetId") String dataSetId) throws IOException {
-        return endpoint.deleteDataSet(dataSetId);
+        return client.dataSet().deleteDataSet(dataSetId);
     }
 
     @DeleteMapping("/delete/{triggerId}")
     public CompletableFuture<AsynchronousOperationResult<AsynchronousOperationInfo>> deleteStatus(@PathVariable("triggerId") String triggerId) throws IOException {
-        return endpoint.deleteDataSetStatus(triggerId);
+        return client.dataSet().deleteDataSetStatus(triggerId);
     }
 }

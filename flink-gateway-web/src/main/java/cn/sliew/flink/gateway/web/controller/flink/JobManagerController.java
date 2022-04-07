@@ -1,5 +1,7 @@
 package cn.sliew.flink.gateway.web.controller.flink;
 
+import cn.sliew.flink.gateway.engine.base.client.FlinkClient;
+import cn.sliew.flink.gateway.engine.http.client.FlinkHttpClient;
 import org.apache.flink.runtime.rest.messages.ClusterConfigurationInfo;
 import org.apache.flink.runtime.rest.messages.LogListInfo;
 import org.apache.flink.runtime.rest.messages.job.metrics.MetricCollectionResponseBody;
@@ -16,21 +18,20 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/flink/job-manager")
 public class JobManagerController {
 
-    private RestEndpoint endpoint = new RestEndpointImpl("http://localhost:8081");
-//    private RestEndpoint endpoint = new RestEndpointImpl2(GlobalConfiguration.loadConfiguration());
+    private FlinkClient client = new FlinkHttpClient("http://localhost:8081");
 
     @GetMapping("config")
     public CompletableFuture<ClusterConfigurationInfo> config() throws IOException {
-        return endpoint.jobmanagerConfig();
+        return client.jobManager().jobmanagerConfig();
     }
 
     @GetMapping("logs")
     public CompletableFuture<LogListInfo> logs() throws IOException {
-        return endpoint.jobmanagerLogs();
+        return client.jobManager().jobmanagerLogs();
     }
 
     @GetMapping("metrics")
     public CompletableFuture<MetricCollectionResponseBody> metrics(@RequestParam(value = "get", required = false) Optional<String> get) throws IOException {
-        return endpoint.jobmanagerMetrics(get);
+        return client.jobManager().jobmanagerMetrics(get);
     }
 }

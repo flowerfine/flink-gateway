@@ -97,7 +97,7 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>flink-gateway-engine</artifactId>
+                <artifactId>flink-gateway-engine-http</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
