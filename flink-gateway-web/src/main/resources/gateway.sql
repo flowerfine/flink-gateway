@@ -116,7 +116,8 @@ create table flink_job (
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
   `comments` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
-
+  PRIMARY KEY (`id`),
+  KEY `idx_update_time` (`update_time`)
 )ENGINE=InnoDB COMMENT='flink 任务';
 
 
