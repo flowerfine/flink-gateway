@@ -1,7 +1,6 @@
 package cn.sliew.flink.gateway.engine.base.client;
 
 import cn.sliew.flink.gateway.common.enums.DeploymentTarget;
-import cn.sliew.flink.gateway.engine.base.endpoint.PackageJarJob;
 import org.apache.flink.configuration.Configuration;
 
 public interface SubmitClient {

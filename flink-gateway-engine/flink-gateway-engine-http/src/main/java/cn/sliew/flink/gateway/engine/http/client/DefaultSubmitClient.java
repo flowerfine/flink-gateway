@@ -2,7 +2,7 @@ package cn.sliew.flink.gateway.engine.http.client;
 
 import cn.sliew.flink.gateway.common.enums.DeploymentTarget;
 import cn.sliew.flink.gateway.engine.base.client.SubmitClient;
-import cn.sliew.flink.gateway.engine.base.endpoint.PackageJarJob;
+import cn.sliew.flink.gateway.engine.base.client.PackageJarJob;
 import org.apache.flink.client.ClientUtils;
 import org.apache.flink.client.cli.ApplicationDeployer;
 import org.apache.flink.client.cli.CliFrontend;

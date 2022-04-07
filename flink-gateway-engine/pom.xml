@@ -15,6 +15,7 @@
     <modules>
         <module>flink-gateway-engine-base</module>
         <module>flink-gateway-engine-http</module>
+        <module>flink-gateway-engine-rest</module>
     </modules>
 
     <dependencyManagement>
