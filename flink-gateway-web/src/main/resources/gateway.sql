@@ -67,7 +67,7 @@ CREATE TABLE `flink_setting`
     `comments`      varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
     PRIMARY KEY (`id`),
     KEY `idx_update_time` (`update_time`)
-) ENGINE = InnoDB COMMENT ='flink 版本配置';
+) ENGINE = InnoDB COMMENT ='flink 配置';
 
 CREATE TABLE `flink_deploy_config`
 (
@@ -121,58 +121,55 @@ create table flink_artifact
 
 create table flink_job_config
 (
-    `id`          bigint       NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `checkpoint`  tinyint(4)   NOT NULL COMMENT '任务名称',
-    `savepoint`   varchar(64) COMMENT '集群地址',
-    `ha`          bigint       NOT NULL COMMENT 'flink web-ui 地址',
-    `default`     tinyint(4)   NOT NULL COMMENT '默认标识。0: 默认配置, 1: 自定义',
-    `creator`     varchar(64)  NOT NULL DEFAULT 'system' COMMENT '创建人 ',
-    `updater`     varchar(64)  NOT NULL DEFAULT 'system' COMMENT '修改者',
-    `deleted`     tinyint      NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
-    `create_time` datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-    `comments`    varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
+    `id`                       bigint       NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `name`                     varchar(64)  NOT NULL COMMENT '配置名称',
+    `checkpoint`               text COMMENT 'checkpoint',
+    `ha`                       text COMMENT 'ha',
+    `additional_configuration` text COMMENT '自定义配置',
+    `default`                  tinyint(4)   NOT NULL COMMENT '默认标识。0: 默认配置, 1: 自定义',
+    `creator`                  varchar(64)  NOT NULL DEFAULT 'system' COMMENT '创建人 ',
+    `updater`                  varchar(64)  NOT NULL DEFAULT 'system' COMMENT '修改者',
+    `deleted`                  tinyint      NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
+    `create_time`              datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`              datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    `comments`                 varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
     PRIMARY KEY (`id`),
     KEY `idx_update_time` (`update_time`)
 ) ENGINE = InnoDB COMMENT ='flink 任务配置';
 
--- 任务本身的信息: jar，entryClass，classpath，并行度
--- savepoint:
--- checkpoint:
--- 资源信息: cpu/memory，jobmanager/taskmanager
 create table flink_job
 (
-    `id`                bigint       NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `name`              tinyint(4)   NOT NULL COMMENT '任务名称',
-    `deploy_log_id`     varchar(64) COMMENT '集群地址',
-    `web_interface_url` bigint       NOT NULL COMMENT 'flink web-ui 地址',
-    `status`            tinyint(4)   NOT NULL COMMENT '集群状态。运行或者关闭',
-    `creator`           varchar(64)  NOT NULL DEFAULT 'system' COMMENT '创建人 ',
-    `updater`           varchar(64)  NOT NULL DEFAULT 'system' COMMENT '修改者',
-    `deleted`           tinyint      NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
-    `create_time`       datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time`       datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-    `comments`          varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
+    `id`                    bigint       NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `name`                  tinyint(4)   NOT NULL COMMENT '任务名称',
+    `jar_url`               varchar(255) NOT NULL COMMENT 'jar 链接。支持 file、hdfs、s3 协议',
+    `entrypoint_class`      varchar(255) NOT NULL COMMENT 'main class',
+    `entrypoint_class_args` varchar(255) NOT NULL COMMENT 'main class args',
+    `parallelism`           int COMMENT 'parallelism',
+    `dependencies`          varchar(255) COMMENT '依赖链接。支持 file、hdfs、s3 协议',
+    `deploy_config_id`      varchar(64) COMMENT '集群配置 id',
+    `creator`               varchar(64)  NOT NULL DEFAULT 'system' COMMENT '创建人 ',
+    `updater`               varchar(64)  NOT NULL DEFAULT 'system' COMMENT '修改者',
+    `deleted`               tinyint      NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
+    `create_time`           datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`           datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    `comments`              varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
     PRIMARY KEY (`id`),
     KEY `idx_update_time` (`update_time`)
 ) ENGINE = InnoDB COMMENT ='flink 任务';
 
-
 -- 任务信息
 create table flink_job_log
 (
-
-    `id`                bigint       NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `deploy_config_id`  tinyint(4)   NOT NULL COMMENT '部署配置 id',
-    `cluster_id`        varchar(64) COMMENT 'flink cluster id',
-    `web_interface_url` bigint       NOT NULL COMMENT 'flink web-ui 地址',
-    `status`            tinyint(4)   NOT NULL COMMENT '集群状态。运行或者关闭',
-    `creator`           varchar(255) NOT NULL DEFAULT 'system' COMMENT '创建人 ',
-    `updater`           varchar(255) NOT NULL DEFAULT 'system' COMMENT '修改者',
-    `deleted`           tinyint      NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
-    `create_time`       datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time`       datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-    `comments`          varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
+    `id`            bigint       NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `job_config_id` bigint       NOT NULL COMMENT '任务配置 id',
+    `deploy_log_id` bigint COMMENT '集群部署 id',
+    `status`        tinyint(4)   NOT NULL COMMENT '集群状态。运行或者关闭',
+    `creator`       varchar(255) NOT NULL DEFAULT 'system' COMMENT '创建人 ',
+    `updater`       varchar(255) NOT NULL DEFAULT 'system' COMMENT '修改者',
+    `deleted`       tinyint      NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
+    `create_time`   datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`   datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    `comments`      varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
     PRIMARY KEY (`id`),
     KEY `idx_update_time` (`update_time`)
 ) ENGINE = InnoDB COMMENT ='flink 任务日志';
