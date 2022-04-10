@@ -10,22 +10,25 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>flink-gateway-engine</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
-    <modules>
-        <module>flink-gateway-engine-base</module>
-        <module>flink-gateway-engine-http</module>
-        <module>flink-gateway-engine-rest</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-java</artifactId>
+        </dependency>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>flink-gateway-engine-base</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+        <dependency>
+            <groupId>cn.sliew</groupId>
+            <artifactId>flinkful-cli-frontend</artifactId>
+            <version>1.0.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.sliew</groupId>
+            <artifactId>flinkful-rest-client</artifactId>
+            <version>1.0.2-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
 
 </project>
