@@ -121,17 +121,17 @@ create table flink_artifact
 
 create table flink_job_config
 (
-    `id`                bigint       NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `checkpoint`              tinyint(4)   NOT NULL COMMENT '任务名称',
-    `savepoint`     varchar(64) COMMENT '集群地址',
-    `ha` bigint       NOT NULL COMMENT 'flink web-ui 地址',
-    `default`           tinyint(4)   NOT NULL COMMENT '默认标识。0: 默认配置, 1: 自定义',
-    `creator`           varchar(64)  NOT NULL DEFAULT 'system' COMMENT '创建人 ',
-    `updater`           varchar(64)  NOT NULL DEFAULT 'system' COMMENT '修改者',
-    `deleted`           tinyint      NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
-    `create_time`       datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time`       datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-    `comments`          varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
+    `id`          bigint       NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `checkpoint`  tinyint(4)   NOT NULL COMMENT '任务名称',
+    `savepoint`   varchar(64) COMMENT '集群地址',
+    `ha`          bigint       NOT NULL COMMENT 'flink web-ui 地址',
+    `default`     tinyint(4)   NOT NULL COMMENT '默认标识。0: 默认配置, 1: 自定义',
+    `creator`     varchar(64)  NOT NULL DEFAULT 'system' COMMENT '创建人 ',
+    `updater`     varchar(64)  NOT NULL DEFAULT 'system' COMMENT '修改者',
+    `deleted`     tinyint      NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',
+    `create_time` datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    `comments`    varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
     PRIMARY KEY (`id`),
     KEY `idx_update_time` (`update_time`)
 ) ENGINE = InnoDB COMMENT ='flink 任务配置';
