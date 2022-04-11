@@ -74,7 +74,6 @@ CREATE TABLE `flink_deploy_config`
     `id`                bigint(20)   NOT NULL AUTO_INCREMENT COMMENT 'id',
     `resource_provider` tinyint(4)   NOT NULL COMMENT 'flink Resource。0: Standalone, 1: Native Kubernetes, 2: YARN',
     `deploy_mode`       tinyint(4)   NOT NULL COMMENT 'flink 部署模式。0: Application, 1: Per-Job, 2: Session',
-    `flink_setting_id`  bigint(20) COMMENT 'flink 配置 id',
     `deploy_context`    varchar(255) NOT NULL COMMENT 'yarn 配置地址或 kubernetes context 地址。支持 file、hdfs、s3 协议',
     `desc`              varchar(255) NOT NULL DEFAULT '' COMMENT '描述',
     `creator`           varchar(64)  NOT NULL DEFAULT 'system' COMMENT '创建人 ',
@@ -91,6 +90,7 @@ CREATE TABLE `flink_deploy_log`
 (
     `id`                bigint(20)   NOT NULL AUTO_INCREMENT COMMENT 'id',
     `deploy_config_id`  bigint(20)   NOT NULL COMMENT '部署配置 id',
+    `setting_id`  bigint(20)   NOT NULL COMMENT 'flink 配置 id',
     `cluster_id`        varchar(128) COMMENT 'flink cluster id',
     `web_interface_url` varchar(255) NOT NULL COMMENT 'flink web-ui 地址',
     `status`            tinyint(4)   NOT NULL COMMENT '集群状态。运行或者关闭',
@@ -109,6 +109,7 @@ create table flink_artifact
     `id`          bigint       NOT NULL AUTO_INCREMENT COMMENT 'id',
     `name`        varchar(255) NOT NULL COMMENT 'artifact 名称',
     `url`         varchar(255) NOT NULL COMMENT 'artifact 链接。支持 file、hdfs、s3 协议',
+    `desc`              varchar(255) NOT NULL DEFAULT '' COMMENT '描述',
     `creator`     varchar(64)  NOT NULL DEFAULT 'system' COMMENT '创建人 ',
     `updater`     varchar(64)  NOT NULL DEFAULT 'system' COMMENT '修改者',
     `deleted`     tinyint      NOT NULL DEFAULT '0' COMMENT '删除标识。0: 未删除, 1: 已删除',

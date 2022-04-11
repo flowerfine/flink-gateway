@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="cn.sliew.flink.gateway.dao.mapper.gateway.flink.deploy.FlinkDeployConfigMapper">
+<mapper namespace="cn.sliew.flink.gateway.dao.mapper.gateway.flink.FlinkArtifactMapper">
 
-    <resultMap id="BaseResultMap" type="cn.sliew.flink.gateway.dao.entity.gateway.flink.deploy.FlinkDeployConfig">
+    <resultMap id="BaseResultMap" type="cn.sliew.flink.gateway.dao.entity.gateway.flink.FlinkArtifact">
         <id column="id" property="id"/>
-        <result column="resource_provider" property="resourceProvider"/>
-        <result column="deploy_mode" property="deployMode"/>
-        <result column="deploy_context" property="deployContext"/>
+        <result column="name" property="name"/>
+        <result column="url" property="url"/>
         <result column="desc" property="desc"/>
         <result column="creator" property="creator"/>
         <result column="updater" property="updater"/>
@@ -17,22 +16,16 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, resource_provider, deploy_mode, deploy_context, `desc`, creator, updater, deleted,
-        create_time, update_time, comments
+        id, `name`, url, `desc`, creator, updater, deleted, create_time, update_time, comments
     </sql>
-
-    <insert id="insertSelective"
-            parameterType="cn.sliew.flink.gateway.dao.entity.gateway.flink.deploy.FlinkDeployConfig">
-        insert into flink_deploy_config
+    <insert id="insertSelective" parameterType="cn.sliew.flink.gateway.dao.entity.gateway.flink.FlinkArtifact">
+        insert into flink_artifact
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="resourceProvider != null">
-                resource_provider,
+            <if test="name != null">
+                `name`,
             </if>
-            <if test="deployMode != null">
-                deploy_mode,
-            </if>
-            <if test="deployContext != null">
-                deploy_context,
+            <if test="url != null">
+                url,
             </if>
             <if test="desc != null">
                 `desc`,
@@ -48,14 +41,11 @@
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="resourceProvider != null">
-                #{resourceProvider},
+            <if test="name != null">
+                #{name},
             </if>
-            <if test="deployMode != null">
-                #{deployMode},
-            </if>
-            <if test="deployContext != null">
-                #{deployContext},
+            <if test="url != null">
+                #{url},
             </if>
             <if test="desc != null">
                 #{desc},
@@ -71,19 +61,15 @@
             </if>
         </trim>
     </insert>
-
     <update id="updateByPrimaryKeySelective"
-            parameterType="cn.sliew.flink.gateway.dao.entity.gateway.flink.deploy.FlinkDeployConfig">
-        update flink_deploy_config
+            parameterType="cn.sliew.flink.gateway.dao.entity.gateway.flink.FlinkArtifact">
+        update flink_artifact
         <set>
-            <if test="resourceProvider != null">
-                resource_provider = #{resourceProvider},
+            <if test="name != null">
+                `name` = #{name},
             </if>
-            <if test="deployMode != null">
-                deploy_mode = #{deployMode},
-            </if>
-            <if test="deployContext != null">
-                deploy_context = #{deployContext},
+            <if test="url != null">
+                url = #{url},
             </if>
             <if test="desc != null">
                 `desc` = #{desc},

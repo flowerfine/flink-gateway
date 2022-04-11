@@ -5,4 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 public interface FlinkDeployConfigMapper extends BaseMapper<FlinkDeployConfig> {
 
+    int insertSelective(FlinkDeployConfig record);
+
+    int updateByPrimaryKeySelective(FlinkDeployConfig record);
 }

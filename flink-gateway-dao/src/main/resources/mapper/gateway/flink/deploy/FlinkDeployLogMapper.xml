@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sliew.flink.gateway.dao.mapper.gateway.flink.deploy.FlinkDeployLogMapper">
+
+    <resultMap id="BaseResultMap" type="cn.sliew.flink.gateway.dao.entity.gateway.flink.deploy.FlinkDeployLog">
+        <id column="id" property="id"/>
+        <result column="deploy_config_id" property="deployConfigId"/>
+        <result column="setting_id" property="settingId"/>
+        <result column="cluster_id" property="clusterId"/>
+        <result column="web_interface_url" property="webInterfaceUrl"/>
+        <result column="status" property="status"/>
+        <result column="creator" property="creator"/>
+        <result column="updater" property="updater"/>
+        <result column="deleted" property="deleted"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="comments" property="comments"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, deploy_config_id, setting_id, cluster_id, web_interface_url, `status`,
+        creator, updater, deleted, create_time, update_time, comments
+    </sql>
+
+    <insert id="insertSelective"
+            parameterType="cn.sliew.flink.gateway.dao.entity.gateway.flink.deploy.FlinkDeployLog">
+        insert into flink_deploy_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deployConfigId != null">
+                deploy_config_id,
+            </if>
+            <if test="settingId != null">
+                setting_id,
+            </if>
+            <if test="clusterId != null">
+                cluster_id,
+            </if>
+            <if test="webInterfaceUrl != null">
+                web_interface_url,
+            </if>
+            <if test="status != null">
+                `status`,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="updater != null">
+                updater,
+            </if>
+            <if test="comments != null">
+                comments,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deployConfigId != null">
+                #{deployConfigId},
+            </if>
+            <if test="settingId != null">
+                #{settingId},
+            </if>
+            <if test="clusterId != null">
+                #{clusterId},
+            </if>
+            <if test="webInterfaceUrl != null">
+                #{webInterfaceUrl},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+            <if test="creator != null">
+                #{creator},
+            </if>
+            <if test="updater != null">
+                #{updater},
+            </if>
+            <if test="comments != null">
+                #{comments},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective"
+            parameterType="cn.sliew.flink.gateway.dao.entity.gateway.flink.deploy.FlinkDeployLog">
+        update flink_deploy_log
+        <set>
+            <if test="deployConfigId != null">
+                deploy_config_id = #{deployConfigId},
+            </if>
+            <if test="settingId != null">
+                setting_id = #{settingId},
+            </if>
+            <if test="clusterId != null">
+                cluster_id = #{clusterId},
+            </if>
+            <if test="webInterfaceUrl != null">
+                web_interface_url = #{webInterfaceUrl},
+            </if>
+            <if test="status != null">
+                `status` = #{status},
+            </if>
+            <if test="updater != null">
+                updater = #{updater},
+            </if>
+            <if test="comments != null">
+                comments = #{comments},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+</mapper>
