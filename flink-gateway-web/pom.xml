@@ -12,8 +12,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>flink-gateway-engine-http</artifactId>
+            <groupId>cn.sliew</groupId>
+            <artifactId>flinkful-cli-frontend</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.sliew</groupId>
+            <artifactId>flinkful-rest-client</artifactId>
         </dependency>
 
         <dependency>

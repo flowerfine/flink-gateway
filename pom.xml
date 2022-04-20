@@ -19,7 +19,6 @@
         <module>flink-gateway-common</module>
         <module>flink-gateway-dao</module>
         <module>flink-gateway-model</module>
-        <module>flink-gateway-engine</module>
         <module>flink-gateway-service</module>
         <module>flink-gateway-web</module>
         <module>flink-gateway-event</module>
@@ -37,6 +36,7 @@
         <disruptor.version>3.4.4</disruptor.version>
         <docker.java.version>3.2.13</docker.java.version>
         <flink.version>1.14.4</flink.version>
+        <finkful.version>1.0.2-SNAPSHOT</finkful.version>
         <knife4j.version>3.0.2</knife4j.version>
         <milky.version>1.0.5</milky.version>
         <mybatis.plus.version>3.5.1</mybatis.plus.version>
@@ -105,6 +105,17 @@
                 <groupId>${project.groupId}</groupId>
                 <artifactId>flink-gateway-service</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.sliew</groupId>
+                <artifactId>flinkful-cli-frontend</artifactId>
+                <version>${finkful.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.sliew</groupId>
+                <artifactId>flinkful-rest-client</artifactId>
+                <version>${finkful.version}</version>
             </dependency>
 
             <dependency>
