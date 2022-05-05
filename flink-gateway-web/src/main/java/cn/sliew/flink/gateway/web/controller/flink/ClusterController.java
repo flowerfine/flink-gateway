@@ -1,7 +1,5 @@
 package cn.sliew.flink.gateway.web.controller.flink;
 
-import cn.sliew.flink.gateway.engine.base.client.FlinkClient;
-import cn.sliew.flink.gateway.engine.http.client.FlinkHttpClient;
 import org.apache.flink.runtime.rest.handler.legacy.messages.ClusterOverviewWithVersion;
 import org.apache.flink.runtime.rest.messages.EmptyResponseBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
