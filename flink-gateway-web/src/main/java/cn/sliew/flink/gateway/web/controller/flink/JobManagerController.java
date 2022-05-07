@@ -1,10 +1,10 @@
 package cn.sliew.flink.gateway.web.controller.flink;
 
-import cn.sliew.flink.gateway.engine.base.client.FlinkClient;
-import cn.sliew.flink.gateway.engine.http.client.FlinkHttpClient;
+import cn.sliew.flinkful.rest.base.RestClient;
 import org.apache.flink.runtime.rest.messages.ClusterConfigurationInfo;
 import org.apache.flink.runtime.rest.messages.LogListInfo;
 import org.apache.flink.runtime.rest.messages.job.metrics.MetricCollectionResponseBody;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,7 +18,8 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/flink/job-manager")
 public class JobManagerController {
 
-    private FlinkClient client = new FlinkHttpClient("http://localhost:8081");
+    @Autowired
+    private RestClient client;
 
     @GetMapping("config")
     public CompletableFuture<ClusterConfigurationInfo> config() throws IOException {

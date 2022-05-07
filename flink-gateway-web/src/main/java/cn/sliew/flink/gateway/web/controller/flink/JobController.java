@@ -1,7 +1,6 @@
 package cn.sliew.flink.gateway.web.controller.flink;
 
-import cn.sliew.flink.gateway.engine.base.client.FlinkClient;
-import cn.sliew.flink.gateway.engine.http.client.FlinkHttpClient;
+import cn.sliew.flinkful.rest.base.RestClient;
 import org.apache.flink.runtime.messages.webmonitor.JobIdsWithStatusOverview;
 import org.apache.flink.runtime.messages.webmonitor.MultipleJobsDetails;
 import org.apache.flink.runtime.rest.handler.async.AsynchronousOperationInfo;
@@ -21,6 +20,7 @@ import org.apache.flink.runtime.rest.messages.job.metrics.MetricCollectionRespon
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointInfo;
 import org.apache.flink.runtime.rest.messages.job.savepoints.SavepointTriggerRequestBody;
 import org.apache.flink.runtime.rest.messages.job.savepoints.stop.StopWithSavepointRequestBody;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +32,8 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/flink/jobs")
 public class JobController {
 
-    private FlinkClient client = new FlinkHttpClient("http://localhost:8081");
+    @Autowired
+    private RestClient client;
 
     @GetMapping("overview")
     public CompletableFuture<MultipleJobsDetails> jobsOverview() throws IOException {
